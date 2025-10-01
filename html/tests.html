@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SVG 스타일 복제 (HTML+CSS)</title>
+    <style>
+        /* 전체 컨테이너: 327x48, r=8, 배경 #F2F4F6 */
+        .pill {
+            position: relative;
+            width: 327px;
+            height: 48px;
+            border-radius: 8px;
+            background: #F2F4F6;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            /* clipPath 효과 */
+            padding: 0;
+            /* SVG의 clip에 맞춰 내부 요소를 자르게 */
+        }
+
+        /* 왼쪽 흰 카드: 좌상단 (4,4), 크기 대략 161.5 x 40 재현 */
+        .left-card {
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            width: 161.5px;
+            /* SVG 수치 맞춤 */
+            height: 40px;
+            /* 48 - 8 = 40 */
+            background: #fff;
+            border-radius: 10px;
+            /* SVG의 crispEdges + 둥근 느낌 보정 */
+            /* SVG filter(drop shadow) 근사치: dy=2, blur=3, opacity=0.2 */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 오른쪽 영역: SVG에서 별도의 회색 라운드 영역이 같은 높이로 들어감 */
+        .right-area {
+            position: absolute;
+            left: 165.5px;
+            /* SVG 수치: 165.5부터 시작 */
+            top: 4px;
+            width: calc(327px - 165.5px - 4px);
+            /* 오른쪽 마진 4px */
+            height: 40px;
+            background: #F2F4F6;
+            border-radius: 10px;
+            /* 좌/우 모두 둥글게 (clip으로 밖은 이미 둥글게 잘림) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 텍스트는 데모용(원본은 path로 그려진 글자) */
+        .label {
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+            font-size: 14px;
+            line-height: 1;
+            letter-spacing: 0.2px;
+            color: #111;
+            /* 왼쪽은 #111 */
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .label.gray {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="pill" role="img" aria-label="SVG 버튼 스타일의 캡슐 UI">
+        <div class="left-card">
+            <span class="label">Left Label</span>
+        </div>
+        <div class="right-area">
+            <span class="label gray">Right Label</span>
+        </div>
+    </div>
+
+</body>
+
+</html>
