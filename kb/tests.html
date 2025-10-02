@@ -39,19 +39,3 @@
 </body>
 </html>
 
-
-<script>
-
-    function bindConfirmActive(obj){
-    var $wrap = $(obj);
-
-    $wrap.on('click', '.tabCont button', function(e){
-        var $cont = $(this).closest('.tabCont');
-        var idx   = $wrap.find('> .tabCont').index($cont);
-
-        if (idx === 1) {
-        $wrap.find('> .tab li').eq(1).addClass('active');
-        }
-    });
-    }
-</script>
