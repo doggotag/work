@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Small Label Box</title>
+<style>
+  body { display:flex; align-items:center; justify-content:center; height:100vh; background:#f7f7f7; }
+
+  .label-box {
+    width: 41px;
+    height: 22px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .label-text {
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
+    font-size: 10px;       /* 41×22에 맞춰 작게 */
+    line-height: 1;
+    color: #2D4A9B;
+    white-space: nowrap;
+    transform: translateY(0.5px); /* 렌더링 보정(선택) */
+  }
+</style>
+</head>
+<body>
+
+<div class="label-box">
+  <span class="label-text">Label</span>
+</div>
+
+</body>
+</html>
+
