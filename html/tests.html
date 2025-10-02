@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Small Label Box</title>
 <style>
-  /* 컨테이너(데모용) */
   body { display:flex; align-items:center; justify-content:center; height:100vh; background:#f7f7f7; }
 
-  /* SVG의 41×22, 흰 배경, #DDD 보더, 4px 라운드 근사 */
   .label-box {
     width: 41px;
     height: 22px;
@@ -19,11 +17,9 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    /* 텍스트 라인이 박스 밖으로 안 나가게 */
     overflow: hidden;
   }
 
-  /* 텍스트: SVG의 파란색(#2D4A9B) 근사, 아주 작은 사이즈 */
   .label-text {
     font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
     font-size: 10px;       /* 41×22에 맞춰 작게 */
@@ -44,138 +40,18 @@
 </html>
 
 
-
-
-
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8" />
-<title>탭 예제</title>
-<style>
-  .tabs { display:flex; list-style:none; padding:0; margin:0; }
-  .tabs li { margin-right:10px; }
-  .tabs a { padding:6px 12px; text-decoration:none; border:1px solid #ccc; border-radius:4px; color:#333; }
-  .tabs a.active { background:#2d4a9b; color:#fff; font-weight:bold; }
-  .tab-content { display:none; margin-top:20px; padding:10px; border:1px solid #ddd; }
-  .tab-content.active { display:block; }
-</style>
-</head>
-<body>
-
-<ul class="tabs">
-  <li><a href="#tab1">탭1</a></li>
-  <li><a href="#tab2">탭2</a></li>
-  <li><a href="#tab3">탭3</a></li>
-  <li><a href="#tab4">탭4</a></li>
-</ul>
-
-<div id="tab1" class="tab-content">
-  <p>탭1 내용</p>
-  <button class="confirm-btn">확인완료</button>
-</div>
-<div id="tab2" class="tab-content">
-  <p>탭2 내용</p>
-  <button class="confirm-btn">확인완료</button>
-</div>
-<div id="tab3" class="tab-content">
-  <p>탭3 내용</p>
-  <button class="confirm-btn">확인완료</button>
-</div>
-<div id="tab4" class="tab-content">
-  <p>탭4 내용</p>
-  <button class="confirm-btn">확인완료</button>
-</div>
-
 <script>
-  // 탭 클릭 → 내용 표시
-  document.querySelectorAll(".tabs a").forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      // 탭 내용 표시 토글
-      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-      const target = document.querySelector(link.getAttribute("href"));
-      if (target) target.classList.add("active");
+
+    function bindConfirmActive(obj){
+    var $wrap = $(obj);
+
+    $wrap.on('click', '.tabCont button', function(e){
+        var $cont = $(this).closest('.tabCont');
+        var idx   = $wrap.find('> .tabCont').index($cont);
+
+        if (idx === 1) {
+        $wrap.find('> .tab li').eq(1).addClass('active');
+        }
     });
-  });
-
-  // 확인완료 버튼 클릭 → 해당 탭에 active 클래스 추가
-  document.querySelectorAll(".confirm-btn").forEach(button => {
-    button.addEventListener("click", function() {
-      const tabContent = this.closest(".tab-content");
-      const tabId = tabContent.id;
-      const tabLink = document.querySelector(`.tabs a[href="#${tabId}"]`);
-      if (tabLink) tabLink.classList.add("active");
-    });
-  });
-
-
-
-// "확인완료" 버튼 → 해당 탭 활성화(+컨텐츠/스크롤 동기화)
-function bindConfirmFeature(obj){
-  var $this = $(obj);
-
-  // 탭 컨텐츠 내부 버튼을 이벤트 위임으로 처리 (구조 변경 없이 안전)
-  $this.on('click', '.tabCont .confirm-btn', function(e){
-    e.preventDefault();
-
-    var $cont = $(this).closest('.tabCont');
-    var idx   = $this.find('> .tabCont').index($cont);
-    if(idx < 0) return;
-
-    var $tabs  = $this.find('> .tab li');
-    var $links = $tabs.find('> a');
-
-    // 탭 상태 동기화 (기존 스타일에 맞춰 .on 사용)
-    $tabs.eq(idx).addClass('on').siblings().removeClass('on');
-    $links.attr('title','');
-    $tabs.eq(idx).find('> a').attr('title','선택됨'); // 기존 깨진 문자열 교체
-
-    // 컨텐츠 표시 동기화
-    $this.find('> .tabCont').hide().eq(idx).show();
-
-    // 기존 흐름과 동일하게 후처리 호출 (있다면)
-    if (typeof floatBtnUI === 'function') floatBtnUI();
-    if (typeof layoutUI   === 'function') layoutUI();
-
-    // 스크롤 동기화 (기존 로직을 그대로 맞춤)
-    var $tabBar = $this.find('.tab');
-    var activeLink = $tabs.eq(idx).find('a')[0];
-    if(activeLink){
-      if(activeLink.offsetLeft >= window.innerWidth / 1.5 ||
-         idx === $tabs.length - 1){
-        $tabBar.stop().animate({
-          "scrollLeft" : activeLink.offsetLeft - $tabs.eq(idx).prev('li').width()
-        }, 250);
-      } else {
-        $tabBar.stop().animate({ "scrollLeft" : 0 }, 250);
-      }
     }
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 </script>
-
-</body>
-</html>
-
-
-
-
-
