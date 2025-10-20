@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Timeline List</title>
+<style>
+body {
+  background: #f6f7f9;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  padding: 20px 30px;
+  width: 420px;
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding-left: 60px;
+  position: relative;
+  counter-reset: step;
+}
+.timeline li {
+  position: relative;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.timeline li:last-child {
+  margin-bottom: 0;
+}
+.timeline li::before {
+  content: counter(step);
+  counter-increment: step;
+  position: absolute;
+  left: -60px;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffd333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #000;
+  z-index: 2;
+}
+.timeline li::after {
+  content: "";
+  position: absolute;
+  left: -45px;        
+  top: 35px;         
+  width: 2px;
+  height: calc(100% - 10px);
+  background: #e5e5e5;
+  z-index: 1;
+}
+.timeline li:last-child::after {
+  display: none;
+}
+</style>
+</head>
+<body>
+  <div class="card">
+    <ol class="timeline">
+      <li>Text</li>
+      <li>Text Text Text Text Text Text Text Text<br>Text Text Text Text Text Text Text</li>
+      <li>Text</li>
+    </ol>
+  </div>
+</body>
+</html>
