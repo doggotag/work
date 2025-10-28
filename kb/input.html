@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Timeline List</title>
+<style>
+body {
+  background: #f6f7f9;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  padding: 20px 30px;
+  width: 420px;
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding-left: 60px;
+  position: relative;
+  counter-reset: step;
+}
+.timeline li {
+  position: relative;
+  margin-bottom: 16px; /* 아래 항목 간 여백 */
+  line-height: 1.6;
+}
+.timeline li:last-child {
+  margin-bottom: 0;
+}
+.timeline li::before {
+  content: counter(step);
+  counter-increment: step;
+  position: absolute;
+  left: -60px;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ffd333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #000;
+  z-index: 2;
+}
+/* ⬇️ 동그라미와 선 사이에 살짝 여백을 둠 */
+.timeline li::after {
+  content: "";
+  position: absolute;
+  left: -45px;
+  top: 38px;           /* ← 여백 생기는 핵심 (30px + 8px) */
+  width: 2px;
+  height: calc(100% - 16px); /* li 간격(16px)에 맞춰 자동 보정 */
+  background: #e5e5e5;
+  z-index: 1;
+}
+.timeline li:last-child::after {
+  display: none;
+}
+</style>
+</head>
+<body>
+  <div class="card">
+    <ol class="timeline">
+      <li>첫 번째 단계입니다.</li>
+      <li>두 번째 단계입니다.<br>텍스트가 조금 길어져도 정렬이 깨지지 않습니다.</li>
+      <li>세 번째 단계입니다.</li>
+    </ol>
+  </div>
+</body>
+</html>
