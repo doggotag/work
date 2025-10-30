@@ -24,3 +24,27 @@ clearInterval(autoReload);
     img.src = bump(img.getAttribute('src'));
   });
 })();
+
+
+
+<p
+  ng-if="(o.cntryRiskDtxt || '').replace(/[\s\u00A0\u200B\uFEFF]/g,'').length"
+  class="txt"
+  ng-class="{'txt_warn': o.cntryRiskFlag === true}"
+  ng-bind="o.cntryRiskDtxt">
+</p>
+
+
+<p ng-if="o.cntryRiskDtxt?.trim()" 
+   class="txt" 
+   ng-class="{'txt_warn': o.cntryRiskFlag}" 
+   ng-bind="o.cntryRiskDtxt">
+</p>
+
+
+
+<p ng-if="o.cntryRiskDtxt && o.cntryRiskDtxt.trim().length > 0"
+   class="txt"
+   ng-class="{'txt_warn': o.cntryRiskFlag}"
+   ng-bind="o.cntryRiskDtxt">
+</p>
