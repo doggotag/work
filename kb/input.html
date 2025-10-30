@@ -1,23 +1,21 @@
-<li ng-repeat="o in vm.cntryList" ng-click="vm.setCntry(o)">
-  <div class="chk">
-    <input type="checkbox"
-           class="inp_checkbox"
-           cdw-checkbox
-           id="rid_{{o.cntryCd}}_{{o.cntryRiskCfd}}"
-           name="rid_g"
-           ng-click="vm.flagChk = true"
-           ng-checked="o.checked">
-    <label class="inp_checkbox_label" for="rid_{{o.cntryCd}}_{{o.cntryRiskCfd}}">
-      <span class="hide_txt">{{ o.cntryNm }}</span>
-    </label>
-  </div>
+vm.viewMsg = function () {
+  if (vm.trvlPurps !== '05') {
+    ngDialog.open({
+      plain: true,
+      className: 'ngdialog-theme-default travel-modal',
+      template: `
+        <div class="modal-card">
+          <div class="hero" aria-hidden="true">
+            <span class="emoji">🗓️🌍</span>
+          </div>
 
-  <strong class="tit" ng-bind-html="vm.highlight(o.cntryNm)"></strong>
+          <h2 id="ttl" class="title">여행 기간 3개월 이상은</h2>
+          <p id="subttl" class="subtitle">해외장기체류보험이 필요해요</p>
 
-  <mark ng-if="(vm.searchText || '').trim()"></mark>
-  <p class="srch-note" ng-if="(vm.searchText || '').trim()">{{ vm.searchNote(o) }}</p>
-
-  <p ng-if="o.cntryRiskDtxt != ''" class="txt" id="ngdialog7-aria-describedby">
-    {{ o.cntryRiskDtxt }}
-  </p>
-</li>
+          <button class="cta" type="button" ng-click="closeThisDialog()">해외장기체류(유학/연수생)보험 가입</button>
+          <a href="#" class="link" ng-click="closeThisDialog()">여행 기간 다시 선택</a>
+        </div>
+      `
+    });
+  }
+};
