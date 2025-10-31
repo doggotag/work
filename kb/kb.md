@@ -18,10 +18,22 @@ clearInterval(autoReload);
 
 
 
-  {{
-    vm.eDatePicked
-      ? ((vm.eDate | date:'yyyy.MM.dd(')
-        + ['일','월','화','수','목','금','토'][ (new Date(vm.eDate)).getDay() ]
-        + ')')
-      : '오는날 선택'
-  }}
+vm.formatDateKR = function(dateStr) {
+  if (!dateStr) return ''; // 값이 없을 때 안전 처리
+  var date = new Date(dateStr);
+  if (isNaN(date)) return ''; // 잘못된 날짜일 경우
+  
+  var days = ['일', '월', '화', '수', '목', '금', '토'];
+  var day = days[date.getDay()];
+  
+
+  var formatted = 
+    date.getFullYear() + '.' +
+    ('0' + (date.getMonth() + 1)).slice(-2) + '.' +
+    ('0' + date.getDate()).slice(-2) + '(' + day + ')';
+    
+  return formatted;
+};
+
+<span class="range-date">{{ vm.formatDateKR(vm.sDate) || '가는날 선택' }}</span>
+<span class="range-date">{{ vm.formatDateKR(vm.eDate) || '오는날 선택' }}</span>
