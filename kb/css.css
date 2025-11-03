@@ -1,0 +1,31 @@
+/* ===== 커스텀 스킨: skin-range ===== */
+.skin-range .dwv{font-weight:700;font-size:16px;padding:12px 14px;border-bottom:1px solid #eef1f4;background:#fafafa;}
+.skin-range .dw-cal-header{padding:10px 12px;border-bottom:1px solid #eef1f4;background:#fafafa;}
+.skin-range .dw-cal-btnc-ym{display:flex;gap:12px;align-items:center;justify-content:space-between;}
+.skin-range .dw-cal-year{font-size:14px;color:#6b7280;}
+.skin-range .dw-cal-month{font-size:18px;font-weight:700;}
+.skin-range .dw-cal-days th{font-size:12px;color:#9aa0a6;font-weight:600;padding:8px 0;}
+
+.skin-range .dw-cal-day{position:relative;overflow:visible;border-radius:10px;}
+.skin-range .dw-cal-day .bg{position:absolute;inset:0;border-radius:12px;content:"";display:block;pointer-events:none;}
+.skin-range .dw-cal-day .dw-cal-day-fg{position:relative;z-index:1;}
+
+.skin-range .dw-cal-day.in-range .bg{background:#11182710;}     /* 범위 중간 */
+.skin-range .dw-cal-day.is-start .bg,
+.skin-range .dw-cal-day.is-end   .bg{background:#111827;}        /* 시작/끝 */
+.skin-range .dw-cal-day.is-start .dw-cal-day-fg,
+.skin-range .dw-cal-day.is-end   .dw-cal-day-fg{color:#fff;font-weight:700;}
+.skin-range .dw-cal-day.is-start.in-range .bg{border-top-right-radius:0;border-bottom-right-radius:0;}
+.skin-range .dw-cal-day.is-end.in-range   .bg{border-top-left-radius:0;border-bottom-left-radius:0;}
+
+/* mobiscroll 기본 선택테두리 감추기 */
+.skin-range .dw-cal-day.dw-sel .dw-cal-day-frame{box-shadow:none;border:none;}
+/* 선택 버튼 비활성 스타일 */
+.skin-range .dwb0.disabled{opacity:.4;pointer-events:none;}
+
+
+
+
+
+
+

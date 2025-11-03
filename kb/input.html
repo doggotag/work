@@ -1,0 +1,147 @@
+/* ===== 커스텀 스킨: skin-range ===== */
+.skin-range .dwv{font-weight:700;font-size:16px;padding:12px 14px;border-bottom:1px solid #eef1f4;background:#fafafa;}
+.skin-range .dw-cal-header{padding:10px 12px;border-bottom:1px solid #eef1f4;background:#fafafa;}
+.skin-range .dw-cal-btnc-ym{display:flex;gap:12px;align-items:center;justify-content:space-between;}
+.skin-range .dw-cal-year{font-size:14px;color:#6b7280;}
+.skin-range .dw-cal-month{font-size:18px;font-weight:700;}
+.skin-range .dw-cal-days th{font-size:12px;color:#9aa0a6;font-weight:600;padding:8px 0;}
+
+.skin-range .dw-cal-day{position:relative;overflow:visible;border-radius:10px;}
+.skin-range .dw-cal-day .bg{position:absolute;inset:0;border-radius:12px;content:"";display:block;pointer-events:none;}
+.skin-range .dw-cal-day .dw-cal-day-fg{position:relative;z-index:1;}
+
+.skin-range .dw-cal-day.in-range .bg{background:#11182710;}     /* 범위 중간 */
+.skin-range .dw-cal-day.is-start .bg,
+.skin-range .dw-cal-day.is-end   .bg{background:#111827;}        /* 시작/끝 */
+.skin-range .dw-cal-day.is-start .dw-cal-day-fg,
+.skin-range .dw-cal-day.is-end   .dw-cal-day-fg{color:#fff;font-weight:700;}
+.skin-range .dw-cal-day.is-start.in-range .bg{border-top-right-radius:0;border-bottom-right-radius:0;}
+.skin-range .dw-cal-day.is-end.in-range   .bg{border-top-left-radius:0;border-bottom-left-radius:0;}
+
+/* mobiscroll 기본 선택테두리 감추기 */
+.skin-range .dw-cal-day.dw-sel .dw-cal-day-frame{box-shadow:none;border:none;}
+/* 선택 버튼 비활성 스타일 */
+.skin-range .dwb0.disabled{opacity:.4;pointer-events:none;}
+
+
+
+
+/* ====== 날짜 파싱/도움 함수 ====== */
+function parseFull(full) {
+  // full 예: "2025-10-03" 또는 "2025-9-3"
+  if (!full) return null;
+  var p = full.split('-'); if (p.length < 3) return null;
+  var y = +p[0], m = +p[1], d = +p[2];
+  return new Date(y, m, d); // mobiscroll은 month가 0~11처럼 보이므로 그대로 사용
+}
+function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function inRange(day, s, e){
+  if (!(s && e)) return false;
+  var t = +new Date(day.getFullYear(), day.getMonth(), day.getDate());
+  var ts = +new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  var te = +new Date(e.getFullYear(), e.getMonth(), e.getDate());
+  return t>=ts && t<=te;
+}
+
+/* ====== 페인트(범위 칠하기) ====== */
+function paintRange(sDate, eDate, $root){
+  if (!$root || !$root.length) return;
+  var $days = $root.find('.dw-cal-day');
+  $days.each(function(){
+    var $cell = $(this);
+    // 배경 넣는 엘리먼트 보장
+    if (!$cell.find('.bg').length) $cell.append('<span class="bg"></span>');
+    $cell.removeClass('is-start is-end in-range');
+    var full = $cell.attr('data-full');
+    var d = parseFull(full); if (!d) return;
+
+    if (sDate && sameDay(d, sDate)) $cell.addClass('is-start');
+    if (eDate && sameDay(d, eDate)) $cell.addClass('is-end');
+    if (inRange(d, sDate, eDate))  $cell.addClass('in-range');
+  });
+
+  // 선택 버튼 활성/비활성 갱신
+  var ok = !!(sDate && eDate);
+  $root.find('.dwb0').toggleClass('disabled', !ok).attr('aria-disabled', !ok);
+}
+
+/* ====== 클릭 바인딩 (한 팝업에서 시작/끝 연속 선택) ====== */
+function bindRangeClicks(inst, vm){
+  var $root = $(inst._markup || inst._context).closest('.dw');
+  if (!$root.length) return;
+
+  // 중복 방지
+  $root.off('.rangePick');
+
+  // 날짜 클릭
+  $root.on('click.rangePick', '.dw-cal-day.dwb-e', function(e){
+    e.preventDefault(); e.stopPropagation();
+    var d = parseFull($(this).attr('data-full')); if (!d) return;
+
+    if (!vm.sDate && !vm.eDate){
+      vm.sDate = d;
+    } else if (vm.sDate && !vm.eDate){
+      if (d >= vm.sDate) vm.eDate = d;
+      else { vm.sDate = d; vm.eDate = null; }
+    } else {
+      vm.sDate = d; vm.eDate = null; // 새 범위 시작
+    }
+
+    // 칠하기 + Angular 반영
+    setTimeout(function(){ paintRange(vm.sDate, vm.eDate, $root); }, 0);
+    if (!vm.$$phase && vm.$applyAsync) vm.$applyAsync();
+  });
+
+  // 월/연 이동 시 다시 칠하기
+  $root.on('click.rangePick', '.dw-cal-next-m, .dw-cal-prev-m, .dw-cal-next-y, .dw-cal-prev-y', function(){
+    setTimeout(function(){ paintRange(vm.sDate, vm.eDate, $root); }, 0);
+  });
+}
+
+/* ====== 팝업 오픈 시 스킨/바인딩 주입 ====== */
+function onShowAttach(inst, vm){
+  var $root = $(inst._markup || inst._context).closest('.dw');
+  if (!$root.length) return;
+  $root.addClass('skin-range');
+  // 최초 렌더 이후 칠하기+바인딩
+  setTimeout(function(){
+    paintRange(vm.sDate, vm.eDate, $root);
+    bindRangeClicks(inst, vm);
+  }, 0);
+}
+
+/* ====== 공통 옵션 주입(시작/끝 모두 동일) ====== */
+function buildRangeOpts(vm){
+  return {
+    buttons: ['cancel', {
+      text: '선택',
+      handler: function (ev, inst) {
+        // 끝이 없으면 확정 불가
+        if (!(vm.sDate && vm.eDate)) return;
+        // 기존 체인지 훅 유지
+        vm.changeDate && vm.changeDate('sDate');
+        vm.changeDate && vm.changeDate('eDate');
+        inst.hide();
+      }
+    }],
+    onShow: function (ev, inst) { onShowAttach(inst, vm); }
+  };
+}
+
+/* ====== 컨트롤러에서 한 번만 세팅 ====== */
+// 기존 옵션에 병합
+vm.sDateOpt = angular.extend({}, vm.sDateOpt || {}, buildRangeOpts(vm));
+vm.eDateOpt = angular.extend({}, vm.eDateOpt || {}, buildRangeOpts(vm));
+
+// 팝업 하나만 열기
+vm.openRange = function(){ $('#sDate').mobiscroll('show'); };
+
+
+<!-- 가는날/오는날 트리거 -->
+<button type="button" class="range-date-btn" ng-click="vm.openRange()">...</button>
+<span class="range-dash">–</span>
+<button type="button" class="range-date-btn" ng-click="vm.openRange()">...</button>
+
+<!-- 기존 숨김 인풋(그대로) -->
+<input mobi-calendar-select id="sDate" ...>
+<input mobi-calendar-select id="eDate" ...>
