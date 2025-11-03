@@ -1,0 +1,56 @@
+.skin-range .dwv{               /* 팝업 타이틀(예: 출발일자) */
+  font-weight:700; font-size:16px;
+  padding:12px 14px; border-bottom:1px solid #eef1f4; background:#fafafa;
+}
+.skin-range .dw-cal-header{     /* 연/월 헤더 줄 */
+  padding:10px 12px; border-bottom:1px solid #eef1f4; background:#fafafa;
+}
+.skin-range .dw-cal-btnc-ym{ display:flex; gap:12px; align-items:center; justify-content:space-between; }
+.skin-range .dw-cal-year{ font-size:14px; color:#6b7280; }
+.skin-range .dw-cal-month{ font-size:18px; font-weight:700; }
+
+.skin-range .dw-cal-days th{   /* 요일 */
+  font-size:12px; color:#9aa0a6; font-weight:600; padding:8px 0;
+}
+
+/* 날짜 셀 기본 */
+.skin-range .dw-cal-day{
+  position:relative; overflow:visible;
+  border-radius:10px;   /* hover 감 */
+}
+.skin-range .dw-cal-day .bg{
+  position:absolute; inset:0; border-radius:12px; content:""; display:block;
+}
+
+/* 오늘 점 표시 */
+.skin-range .dw-cal-day .dot-today{
+  position:absolute; bottom:6px; left:50%; transform:translateX(-50%);
+  width:6px; height:6px; background:#9aa0a6; border-radius:50%;
+}
+
+/* 선택/범위 상태 */
+.skin-range .dw-cal-day.in-range .bg{ background:#11182710; } /* 중간: 연한 배경 */
+
+.skin-range .dw-cal-day.is-start .bg,
+.skin-range .dw-cal-day.is-end   .bg{
+  background:#111827;  /* 시작/끝: 진하게 */
+}
+
+.skin-range .dw-cal-day.is-start .dw-cal-day-fg,
+.skin-range .dw-cal-day.is-end   .dw-cal-day-fg{
+  color:#fff; font-weight:700;
+}
+
+/* 양 끝이 붙는 경우 둥근 캡 처리 */
+.skin-range .dw-cal-day.is-start.in-range .bg{
+  border-top-right-radius:0; border-bottom-right-radius:0;
+}
+.skin-range .dw-cal-day.is-end.in-range .bg{
+  border-top-left-radius:0; border-bottom-left-radius:0;
+}
+
+/* hover 미리보기(선택 1개만 있을 때) */
+.skin-range .dw-cal-day.preview .bg{ background:#11182715; }
+
+/* 기본 선택점(Mobiscroll의 .dw-sel) 숨김 또는 중화(시작/끝/중간으로 대체하므로) */
+.skin-range .dw-cal-day.dw-sel .dw-cal-day-frame{ box-shadow:none; border:none; }
