@@ -280,20 +280,19 @@ html,body{margin:0;padding:0}
 
 
 
+
 // app/calendar/kbCalendar.directive.js
 
-<script>
-
-angular.module('app').directive('kbCalendar', function($filter) {
+angular.module('app').directive('kbCalendar', function ($filter) {
   return {
     restrict: 'E',
     scope: {
-      ngModel: '=?',
-      rangeModel: '=?',
-      minDate: '=?',
-      maxDate: '=?',
-      month: '=?',
-      onPick: '&?'
+      ngModel: '=?',     // 단일 선택 (YYYYMMDD)
+      rangeModel: '=?',  // { start: 'YYYYMMDD', end: 'YYYYMMDD' }
+      minDate: '=?',     // 'YYYYMMDD' 또는 Date
+      maxDate: '=?',     // 'YYYYMMDD' 또는 Date
+      month: '=?',       // 기준 월 (Date)
+      onPick: '&?'       // on-pick="fn(yyyymmdd)"
     },
     template: `
       <div class="dwwr">
@@ -349,8 +348,8 @@ angular.module('app').directive('kbCalendar', function($filter) {
                         </div>
                       </div>
 
-                    </div><!-- /.dw-cal-anim -->
-                  </div><!-- /.dw-cal-anim-c -->
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -358,73 +357,134 @@ angular.module('app').directive('kbCalendar', function($filter) {
         </div>
       </div>
     `,
-    link: function(scope) {
-      var fmt = d => d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
-      var parseYmd = ymd => !ymd ? null : new Date(+ymd.slice(0,4), +ymd.slice(4,6)-1, +ymd.slice(6,8));
-      var between = (ymd,a,b)=>a&&b&&(ymd>=a&&ymd<=b);
+    link: function (scope) {
+      // ---- helpers ----
+      function fmt(d) {
+        const y = d.getFullYear();
+        const m = ('0' + (d.getMonth() + 1)).slice(-2);
+        const da = ('0' + d.getDate()).slice(-2);
+        return `${y}${m}${da}`;
+      }
+      function toYmd(x) {
+        if (!x) return null;
+        if (angular.isString(x)) return x.replace(/-/g, '');
+        if (angular.isDate(x)) return fmt(x);
+        return null;
+      }
+      function between(ymd, a, b) {
+        return !!(a && b && ymd >= a && ymd <= b);
+      }
 
-      var today = new Date();
+      function normalizeMinMax() {
+        scope._min = toYmd(scope.minDate);
+        scope._max = toYmd(scope.maxDate);
+      }
+      function isDisabledYmd(ymd) {
+        if (scope._min && ymd < scope._min) return true;
+        if (scope._max && ymd > scope._max) return true;
+        return false;
+      }
+
+      const today = new Date();
       scope.month = scope.month || new Date(today.getFullYear(), today.getMonth(), 1);
 
-      function buildMonth(base){
-        var y=base.getFullYear(), m=base.getMonth();
-        var first=new Date(y,m,1);
-        var start=new Date(first);
-        start.setDate(first.getDate()-first.getDay());
-        var weeks=[], cursor=new Date(start);
-        for(var w=0;w<6;w++){
-          var row=[];
-          for(var i=0;i<7;i++){
-            var d=new Date(cursor), ymd=fmt(d);
+      function buildMonth(base) {
+        const y = base.getFullYear();
+        const m = base.getMonth();
+        const first = new Date(y, m, 1);
+        const start = new Date(first);
+        start.setDate(first.getDate() - first.getDay());
+
+        const weeks = [];
+        let cursor = new Date(start);
+        for (let w = 0; w < 6; w++) {
+          const row = [];
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(cursor);
+            const ymd = fmt(d);
             row.push({
-              date:d, ymd:ymd,
-              inMonth:d.getMonth()===m,
-              isToday:fmt(today)===ymd
+              date: d,
+              ymd: ymd,
+              inMonth: d.getMonth() === m,
+              isToday: fmt(today) === ymd,
+              disabled: isDisabledYmd(ymd)
             });
-            cursor.setDate(cursor.getDate()+1);
+            cursor.setDate(cursor.getDate() + 1);
           }
           weeks.push(row);
         }
         return weeks;
       }
 
-      function update(){
-        var y=scope.month.getFullYear(), m=scope.month.getMonth();
-        scope.curYear=y; scope.curMonth=m+1;
-        scope.weeks=buildMonth(scope.month);
-        var next=new Date(y,m+1,1);
-        scope.nextWeeks=buildMonth(next);
-        scope.nextYear=next.getFullYear(); scope.nextMonth=next.getMonth()+1;
+      function update() {
+        normalizeMinMax();
+
+        const y = scope.month.getFullYear();
+        const m = scope.month.getMonth();
+
+        scope.curYear = y;
+        scope.curMonth = m + 1;
+        scope.weeks = buildMonth(scope.month);
+
+        const next = new Date(y, m + 1, 1);
+        scope.nextWeeks = buildMonth(next);
+        scope.nextYear = next.getFullYear();
+        scope.nextMonth = next.getMonth() + 1;
       }
 
-      scope.dayClass=function(d){
-        var cls=[];
-        if(!d.inMonth) cls.push('dw-cal-day-diff');
-        if(d.isToday) cls.push('dw-cal-today');
-        if(scope.rangeModel){
-          var s=scope.rangeModel.start, e=scope.rangeModel.end;
-          if(s&&e&&between(d.ymd,s,e)) cls.push('in-range');
-          if(s&&d.ymd===s) cls.push('is-start','in-range');
-          if(e&&d.ymd===e) cls.push('is-end','in-range');
-        }else if(scope.ngModel===d.ymd){
-          cls.push('is-start','is-end','in-range');
+      scope.dayClass = function (d) {
+        const cls = [];
+        if (!d.inMonth) cls.push('dw-cal-day-diff');
+        if (d.isToday) cls.push('dw-cal-today');
+        if (d.disabled) cls.push('is-disabled');
+
+        const hasRange = scope.rangeModel && (scope.rangeModel.start || scope.rangeModel.end);
+        if (hasRange) {
+          const s = scope.rangeModel.start, e = scope.rangeModel.end;
+          if (s && e && between(d.ymd, s, e)) cls.push('in-range');
+          if (s && d.ymd === s) cls.push('is-start', 'in-range', 'range-left');
+          if (e && d.ymd === e) cls.push('is-end', 'in-range', 'range-right');
+        } else if (scope.ngModel && d.ymd === scope.ngModel) {
+          cls.push('is-start', 'is-end', 'in-range');
         }
-        if(d.date.getDay()===0) cls.push('sun');
+
+        if (d.date.getDay() === 0) cls.push('sun');
         return cls.join(' ');
       };
 
-      scope.pick=function(d){
-        scope.ngModel=d.ymd;
-        if(scope.onPick) scope.onPick({yyyymmdd:d.ymd});
+      scope.pick = function (d) {
+        if (d.disabled) return;
+
+        if (scope.rangeModel) {
+          if (!scope.rangeModel.start || (scope.rangeModel.start && scope.rangeModel.end)) {
+            scope.rangeModel.start = d.ymd;
+            scope.rangeModel.end = null;
+          } else {
+            if (d.ymd < scope.rangeModel.start) {
+              scope.rangeModel.end = scope.rangeModel.start;
+              scope.rangeModel.start = d.ymd;
+            } else {
+              scope.rangeModel.end = d.ymd;
+            }
+          }
+        } else {
+          scope.ngModel = d.ymd;
+        }
+
+        if (scope.onPick) {
+          scope.onPick({ yyyymmdd: d.ymd });
+        }
       };
 
-      scope.$watchGroup(['month','rangeModel.start','rangeModel.end','ngModel'],update);
+      scope.$watchGroup(
+        ['month', 'minDate', 'maxDate', 'rangeModel.start', 'rangeModel.end', 'ngModel'],
+        update
+      );
       update();
     }
   };
 });
-  
-</script>
+
 
 
 
