@@ -5,17 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title></title>
 <style>
-/* ===== 베이스 ===== */
+/* ===== 베이스 / 레이아웃 최소화 ===== */
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-.new-dwwr{max-width:100%;overflow:hidden;background:#fff;}
+.new-dwwr{max-width:100%;background:#fff;}
 
-/* 스크롤 영역 */
+/* 스크롤 뷰포트 */
 #vp{
-  height:100dvh;max-height:100dvh;
-  height:100svh;max-height:100svh;
+  height:100dvh; max-height:100dvh;
+  height:100svh; max-height:100svh;
   overflow-y:auto;
-  overflow-x:hidden;
   overscroll-behavior-y:contain;
   -webkit-overflow-scrolling:touch;
   scroll-snap-type:y proximity;
@@ -24,18 +23,15 @@ html,body{margin:0;padding:0}
   padding-bottom:calc(env(safe-area-inset-bottom,0)+8px);
   touch-action:pan-y;
 }
-.new-month{scroll-snap-align:start}
 
-.new-dw-aria.new-dw-hidden{display:none}
-.new-dw-cal-tabs,.new-dwc.new-dwhl{display:none}
-
-/* ==== 월 ==== */
+/* ===== 월 블록 ===== */
 .new-dw-cal-slide{
   background:#fff;
   padding:16px 14px 14px;
   position:relative;
   scroll-margin-top:16px;
 }
+.new-dw-cal-slide{scroll-snap-align:start}
 
 /* 월 제목 */
 .new-m-title{
@@ -67,105 +63,86 @@ html,body{margin:0;padding:0}
 .new-dw-cal-day .new-dw-cal-day-fg{font-size:15px;font-weight:500;color:#333;position:relative;z-index:4;}
 .new-dw-cal-day.new-sun .new-dw-cal-day-fg{color:#ef4444}
 
-/* 오늘 날짜 */
-.new-dw-cal-today .new-dw-cal-day-fg:before{
+/* 오늘 날짜(동그라미) */
+.new-dw-cal-day.new-dw-cal-today .new-dw-cal-day-fg:before{
   content:"";position:absolute;left:50%;top:50%;
   width:34px;height:34px;border-radius:50%;
   border:1px solid #cfd5db;transform:translate(-50%,-50%);
   z-index:2;
 }
-.new-dw-cal-today .new-today-tag{
+.new-dw-cal-day .new-today-tag{
   position:absolute;left:50%;bottom:-17px;
   transform:translateX(-50%);
   font-size:11px;color:#98a1ab;z-index:3;
 }
 
-/* 범위 띠 */
-:root{
-  --band:#dfeafe;
-  --band-ink:#2D4A9B;
-}
+/* 범위 띠 & 선택 캡슐 */
+:root{ --band:#dfeafe; --band-ink:#2D4A9B; }
+
 .new-dw-cal-day .new-range-bg{
-  position:absolute;z-index:1;
-  left:0;right:0;top:6px;bottom:6px;
+  position:absolute;z-index:1;left:0;right:0;top:6px;bottom:6px;
   background:var(--band);display:none;
 }
 .new-dw-cal-day.new-in-range .new-range-bg{
   display:block;top:0;bottom:0;left:-6px;right:-6px;
 }
 
-/* 시작/끝 선택 캡슐 */
 .new-dw-cal-day.new-is-start .new-cap,
 .new-dw-cal-day.new-is-end .new-cap{
-  display:block;
-  position:absolute;
-  z-index:2;
-  top:0;bottom:0;left:0;right:0;
-  border-radius:999px;
-  background:var(--band-ink);
+  display:block;position:absolute;z-index:2;top:0;bottom:0;left:0;right:0;
+  border-radius:999px;background:var(--band-ink);
 }
 .new-dw-cal-day.new-is-start .new-dw-cal-day-fg,
-.new-dw-cal-day.new-is-end .new-dw-cal-day-fg{color:#fff;z-index:3;}
+.new-dw-cal-day.new-is-end  .new-dw-cal-day-fg{color:#fff;z-index:3;}
 
-/* 오늘 선택 시 원 숨김 */
+/* 오늘을 선택한 경우 동그라미 숨김(선택 색상이 위에 오도록) */
 .new-dw-cal-day.new-dw-cal-today.new-is-start .new-dw-cal-day-fg:before,
-.new-dw-cal-day.new-dw-cal-today.new-is-end .new-dw-cal-day-fg:before{
-  display:none;
-}
+.new-dw-cal-day.new-dw-cal-today.new-is-end   .new-dw-cal-day-fg:before{display:none}
 
-/* 양끝 연결 그라데이션 */
+/* 범위의 양끝 연결감 */
 .new-dw-cal-day.new-range-left .new-range-bg:before,
 .new-dw-cal-day.new-range-right .new-range-bg:after{
   content:"";position:absolute;top:0;bottom:0;width:20px;
 }
 .new-dw-cal-day.new-range-left .new-range-bg:before{
-  left:-20px;
-  background:linear-gradient(90deg,rgba(223,234,254,0),var(--band));
+  left:-20px;background:linear-gradient(90deg,rgba(223,234,254,0),var(--band));
 }
 .new-dw-cal-day.new-range-right .new-range-bg:after{
-  right:-20px;
-  background:linear-gradient(270deg,rgba(223,234,254,0),var(--band));
+  right:-20px;background:linear-gradient(270deg,rgba(223,234,254,0),var(--band));
 }
 
-/* 오늘 이전(이번 달) 회색 */
+/* 이번달의 '오늘 이전' 회색 처리 */
 .new-dw-cal-day.new-past .new-dw-cal-day-fg { color:#999; }
 </style>
 </head>
 <body>
 
 <div class="new-dwwr">
-  <div aria-live="assertive" class="new-dw-aria new-dw-hidden">Calendar</div>
-
+  <!-- 스크롤 뷰포트 -->
   <div id="vp">
-    <div class="new-dwcc">
-      <div class="new-mbsc-w-p new-dw-cal-c">
-        <div class="new-dw-cal">
-          <div class="new-dw-cal-body">
-            <div class="new-dw-cal-m-c new-dw-cal-v">
-              <div id="yearContainer"><!-- 올해 1~12월 전부 + 아래로 무한 확장 --></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- 월들이 쌓이는 곳 -->
+    <div id="yearContainer"></div>
   </div>
 </div>
 
 <script>
 (() => {
+  /* ===== 날짜 유틸 ===== */
   const today = new Date();
   const Y0 = today.getFullYear();
-  const M0 = today.getMonth();
+  const M0 = today.getMonth(); // 0~11
   const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const todayISO = iso(today);
   const noonStamp = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12).getTime();
   const daysIn = (y,m) => new Date(y, m+1, 0).getDate();
 
+  /* ===== 상태 & 기본 노드 ===== */
   const S = { start:null, end:null, maxYear:null };
-  const vp = document.getElementById('vp');
+  const vp  = document.getElementById('vp');
   const box = document.getElementById('yearContainer');
 
-  const div = cls => { const x=document.createElement('div'); x.className=cls; return x; };
+  /* ===== DOM 헬퍼 ===== */
+  const div = cls => { const x=document.createElement('div'); if(cls) x.className=cls; return x; };
   const title = t => { const x=div('new-m-title'); x.textContent=t; return x; };
   const dow = () => {
     const x=div('new-dow');
@@ -173,6 +150,7 @@ html,body{margin:0;padding:0}
     return x;
   };
 
+  /* ===== 한 달 생성 ===== */
   function makeMonth(y,m){
     const wrap = div('new-dw-cal-slide');
     wrap.dataset.ym = `${y}-${m+1}`;
@@ -180,24 +158,26 @@ html,body{margin:0;padding:0}
     wrap.appendChild(dow());
 
     const firstDow = new Date(y,m,1).getDay();
-    const lastDay = daysIn(y,m);
-    const isThisMonth = (y === Y0 && m === M0);
-    let day = 1;
+    const lastDay  = daysIn(y,m);
+    const isThisMonth = (y===Y0 && m===M0);
 
+    let day = 1;
     for(let r=0;r<6;r++){
       const row = div('new-dw-cal-row');
       for(let c=0;c<7;c++){
         const idx = r*7+c;
         const cell = div('new-dw-cal-day');
+
         if(r===0 && idx<firstDow){ cell.classList.add('new-empty'); row.appendChild(cell); continue; }
         if(day>lastDay){ cell.classList.add('new-empty'); row.appendChild(cell); continue; }
 
         const dObj = new Date(y,m,day);
-        const ds = iso(dObj);
-        if(dObj.getDay()===0) cell.classList.add('new-sun');
-        if(ds===todayISO) cell.classList.add('new-dw-cal-today');
+        const ds   = iso(dObj);
 
-        // 오늘 이전(이번 달) 회색 + 클릭 불가
+        if(dObj.getDay()===0) cell.classList.add('new-sun');
+        if(ds===todayISO)     cell.classList.add('new-dw-cal-today');
+
+        // 이번달의 '오늘 이전'은 회색 + 클릭 불가
         const isPast = isThisMonth && ds < todayISO;
         if(isPast) cell.classList.add('new-past');
 
@@ -208,7 +188,14 @@ html,body{margin:0;padding:0}
           <div class="new-dw-i"><div class="new-dw-cal-day-fg">${day}</div></div>
           ${ds===todayISO ? '<div class="new-today-tag">오늘</div>' : ''}
         `;
-        if(!isPast) cell.addEventListener('click',()=>pick(dObj));
+
+        if(!isPast){
+          cell.addEventListener('click', () => {
+            console.log('📅 클릭:', ds);
+            pick(dObj);
+          });
+        }
+
         row.appendChild(cell);
         day++;
       }
@@ -218,67 +205,79 @@ html,body{margin:0;padding:0}
     return wrap;
   }
 
+  /* ===== 특정 연도의 monthStart부터 12월까지 추가 ===== */
   function addYearFrom(y, monthStart=0){
     const frag=document.createDocumentFragment();
     for(let m=monthStart;m<12;m++) frag.appendChild(makeMonth(y,m));
     box.appendChild(frag);
   }
 
+  /* ===== 선택 로직 ===== */
   function pick(d){
-    if(!S.start||S.end){ S.start=d; S.end=null; }
+    if(!S.start || S.end){ S.start=d; S.end=null; }
     else { S.end=(d<S.start)?S.start:d; S.start=(d<S.start)?d:S.start; }
     paint();
   }
 
+  /* ===== 칠하기 ===== */
   function paint(){
     const cells=box.querySelectorAll('.new-dw-cal-day');
+    // reset
     cells.forEach(c=>{
       c.classList.remove('new-in-range','new-is-start','new-is-end','new-range-left','new-range-right');
       const cap=c.querySelector('.new-cap'); if(cap) cap.style.display='none';
       const tag=c.querySelector('.new-today-tag'); if(tag) tag.style.display='';
     });
+
+    // 오늘 태그 유지
     const todayCell=box.querySelector(`.new-dw-cal-day[data-date="${todayISO}"]`);
     if(todayCell){
       todayCell.classList.add('new-dw-cal-today');
       const tag=todayCell.querySelector('.new-today-tag'); if(tag) tag.style.display='';
     }
-    if(!S.start&&!S.end) return;
+
+    if(!S.start && !S.end) return;
 
     const A=noonStamp(S.start);
     const B=S.end?noonStamp(S.end):null;
 
     cells.forEach(c=>{
       const ds=c.dataset.date;
-      if(!ds||c.classList.contains('new-empty')||c.classList.contains('new-past')) return;
+      if(!ds || c.classList.contains('new-empty') || c.classList.contains('new-past')) return;
+
       const [yy,mm,dd]=ds.split('-').map(Number);
       const t=noonStamp(new Date(yy,mm-1,dd));
 
       if(t===A){
         c.classList.add('new-is-start');
         c.querySelector('.new-cap').style.display='block';
-      } else if(B!==null&&t===B){
+      } else if(B!==null && t===B){
         c.classList.add('new-is-end');
         c.querySelector('.new-cap').style.display='block';
-      } else if(B!==null&&t>A&&t<B){
+      } else if(B!==null && t>A && t<B){
         c.classList.add('new-in-range');
       }
 
       if(c.classList.contains('new-in-range')){
         const row=c.parentElement;
         const i=Array.prototype.indexOf.call(row.children,c);
-        const L=row.children[i-1],R=row.children[i+1];
+        const L=row.children[i-1], R=row.children[i+1];
         if(!(L&&L.classList.contains('new-in-range'))) c.classList.add('new-range-left');
         if(!(R&&R.classList.contains('new-in-range'))) c.classList.add('new-range-right');
       }
     });
   }
 
+  /* ===== 초기 렌더 + 무한 스크롤(아래쪽) ===== */
   function init(){
-    addYearFrom(Y0,M0);
-    S.maxYear=Y0;
+    addYearFrom(Y0, M0);               // 올해: 이번 달부터 12월까지
+    S.maxYear = Y0;
     paint();
+
     const cur=box.querySelector(`[data-ym="${Y0}-${M0+1}"]`)||box.firstElementChild;
     if(cur) cur.scrollIntoView({behavior:'instant',block:'start'});
+
+    // 아래로 한 해 미리
     appendNextYear();
   }
 
@@ -291,7 +290,9 @@ html,body{margin:0;padding:0}
 
   const EDGE=40;
   vp.addEventListener('scroll',()=>{
-    if(vp.scrollTop+vp.clientHeight>=vp.scrollHeight-EDGE){ appendNextYear(); }
+    if(vp.scrollTop + vp.clientHeight >= vp.scrollHeight - EDGE){
+      appendNextYear();
+    }
   },{passive:true});
 
   init();
