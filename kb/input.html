@@ -1,558 +1,302 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>캘린더</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title></title>
 <style>
 /* ===== 베이스 ===== */
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+.new-dwwr{max-width:100%;overflow:hidden;background:#fff;}
 
-.dwwr{width:420px;max-width:100%;border-radius:16px;overflow:hidden;background:#fff}
+/* 스크롤 영역 */
+#vp{
+  height:100dvh;max-height:100dvh;
+  height:100svh;max-height:100svh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:y proximity;
+  scroll-padding-top:env(safe-area-inset-top,0);
+  padding-top:env(safe-area-inset-top,0);
+  padding-bottom:calc(env(safe-area-inset-bottom,0)+8px);
+  touch-action:pan-y;
+}
+.new-month{scroll-snap-align:start}
 
-/* 상단 제목(출발일자) */
-.dw-aria.dw-hidden{display:none}
-.dwv{font-weight:700;font-size:16px;padding:12px 16px;border-bottom:1px solid #eef1f4;background:#fafafa}
+.new-dw-aria.new-dw-hidden{display:none}
+.new-dw-cal-tabs,.new-dwc.new-dwhl{display:none}
 
-/* Mobiscroll의 탭/휠은 구조만 남기고 숨김 */
-.dw-cal-tabs,.dwc.dwhl{display:none}
-
-.dwcc{position:relative}
-.mbsc-w-p.dw-cal-c{position:relative}
-.dw-cal{position:relative}
-
-/* 상단 헤더(연/월) */
-.dw-cal-header{padding:10px 14px;border-bottom:1px solid #eef1f4;background:#fafafa}
-.dw-cal-btnc-ym{display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center}
-.dw-cal-year{font-size:14px;color:#6b7280}
-.dw-cal-month{font-size:20px;font-weight:700}
-
-/* ==== 월 스택 ==== */
-.dw-cal-anim-c{position:relative;overflow:hidden;}
-.dw-cal-anim{position:relative;display:flex;flex-direction:column}
-
-/* ==== 개별 월 ==== */
-.dw-cal-slide{
-  background:#fff;padding:16px 14px 14px;position:relative;
+/* ==== 월 ==== */
+.new-dw-cal-slide{
+  background:#fff;
+  padding:16px 14px 14px;
+  position:relative;
+  scroll-margin-top:16px;
 }
 
-/* 월 내부 타이틀(상/하 연/월 분리) */
-.m-title{display:flex;align-items:center;gap:2px;margin-bottom:16px;justify-content: center;}
+/* 월 제목 */
+.new-m-title{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;margin:6px 0 14px;
+  font-weight:500;font-size:16px;color:#111;
+}
 
-
-/* 요일 헤더(각 달 내부에 포함) */
-.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:2px 0 6px}
-.dow div{font-size:15px;font-weight:700;color:#666;text-align:center}
-.dow div.sun{color:#ED3437}
+/* 요일 */
+.new-dow{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:0 0 8px;
+}
+.new-dow div{text-align:center;font-size:14px;font-weight:500;color:#666;}
+.new-dow div.new-sun{color:#ED3437}
 
 /* 날짜 그리드 */
-.rows{}
-.dw-cal-row{  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  margin:20px -4px 0;   /* 좌우 -4px */
-  padding:0 4px;       /* 좌우 4px */}
-
-/* 다음 달 프리뷰: 요일줄은 보여주고 rows만 2주 높이로 클립 */
-.peek-next .rows{max-height:120px;overflow:hidden}
+.new-dw-cal-row{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;
+  margin:18px -4px 0;padding:0 4px;
+}
 
 /* 날짜 셀 */
-.dw-cal-day{
-  position:relative;min-height:32px;border-radius:12px;user-select:none;
-  display:flex;align-items:center;justify-content:center;
+.new-dw-cal-day{
+  position:relative;min-height:32px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;user-select:none;
 }
-.dw-cal-day .dw-i{position:relative;z-index:3}
-.dw-cal-day .dw-cal-day-fg{font-size:15px;font-weight:500;color:#333}
-.dw-cal-day.dw-cal-day-diff .dw-cal-day-fg{color:#999}
-.dw-cal-day.sun .dw-cal-day-fg{color:#ef4444}
+.new-dw-cal-day.new-empty{opacity:0;pointer-events:none}
+.new-dw-cal-day .new-dw-i{position:relative;z-index:3}
+.new-dw-cal-day .new-dw-cal-day-fg{font-size:15px;font-weight:500;color:#333;position:relative;z-index:4;}
+.new-dw-cal-day.new-sun .new-dw-cal-day-fg{color:#ef4444}
 
-/* 오늘: 원형 테두리 + ‘오늘’ 라벨 */
-.dw-cal-today .dw-cal-day-fg{position:relative}
-.dw-cal-today .dw-cal-day-fg:before{
+/* 오늘 날짜 */
+.new-dw-cal-today .new-dw-cal-day-fg:before{
   content:"";position:absolute;left:50%;top:50%;
-  width:34px;height:34px;border-radius:50%;border:1px solid #cccfd3;transform:translate(-50%,-50%);
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid #cfd5db;transform:translate(-50%,-50%);
+  z-index:2;
 }
-.dw-cal-today .today-tag{
-  position:absolute;left:50%;bottom:-17px;transform:translateX(-50%);
-  font-size:11px;color:#9aa0a6;z-index:3;
+.new-dw-cal-today .new-today-tag{
+  position:absolute;left:50%;bottom:-17px;
+  transform:translateX(-50%);
+  font-size:11px;color:#98a1ab;z-index:3;
 }
 
-/* 범위 시각화 */
-.dw-cal-day .range-bg{
-  position:absolute;z-index:1;left:0;right:0;top:6px;bottom:6px;background:#e4eeff;display:none
+/* 범위 띠 */
+:root{
+  --band:#dfeafe;
+  --band-ink:#2D4A9B;
 }
-.dw-cal-day.in-range .range-bg{display:block;  top:0;bottom:0;left:-6px;
-  right:-6px;}
-.dw-cal-day.is-start .cap,
-.dw-cal-day.is-end .cap{
+.new-dw-cal-day .new-range-bg{
+  position:absolute;z-index:1;
+  left:0;right:0;top:6px;bottom:6px;
+  background:var(--band);display:none;
+}
+.new-dw-cal-day.new-in-range .new-range-bg{
+  display:block;top:0;bottom:0;left:-6px;right:-6px;
+}
+
+/* 시작/끝 선택 캡슐 */
+.new-dw-cal-day.new-is-start .new-cap,
+.new-dw-cal-day.new-is-end .new-cap{
   display:block;
   position:absolute;
   z-index:2;
-  top:0px; bottom:0px;  
-  left:0; right:0;
+  top:0;bottom:0;left:0;right:0;
   border-radius:999px;
-  background:#2D4A9B;
+  background:var(--band-ink);
 }
-.dw-cal-day.is-start .cap,.dw-cal-day.is-end .cap{display:block}
-.dw-cal-day.is-start .dw-cal-day-fg,.dw-cal-day.is-end .dw-cal-day-fg{color:#fff}
-.dw-cal-day.range-left .range-bg:before,
-.dw-cal-day.range-right .range-bg:after{content:"";position:absolute;top:0;bottom:0;width:20px}
-.dw-cal-day.range-left .range-bg:before{left:-20px;background:linear-gradient(90deg,rgba(228,238,255,0),#e4eeff)}
-.dw-cal-day.range-right .range-bg:after{right:-20px;background:linear-gradient(270deg,rgba(228,238,255,0),#e4eeff)}
+.new-dw-cal-day.new-is-start .new-dw-cal-day-fg,
+.new-dw-cal-day.new-is-end .new-dw-cal-day-fg{color:#fff;z-index:3;}
 
-/* 푸터 버튼 */
-.dwbc{display:flex;gap:8px;justify-content:center;padding:12px;border-top:1px solid #eef1f4;background:#fafafa}
-.dwbw{flex:1;max-width:180px}
-.dwb{width:100%;text-align:center;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px}
-.dwb0{background:#111827;color:#fff;border-color:#111827}
-.dwb1{background:#fff;color:#111827}
+/* 오늘 선택 시 원 숨김 */
+.new-dw-cal-day.new-dw-cal-today.new-is-start .new-dw-cal-day-fg:before,
+.new-dw-cal-day.new-dw-cal-today.new-is-end .new-dw-cal-day-fg:before{
+  display:none;
+}
 
+/* 양끝 연결 그라데이션 */
+.new-dw-cal-day.new-range-left .new-range-bg:before,
+.new-dw-cal-day.new-range-right .new-range-bg:after{
+  content:"";position:absolute;top:0;bottom:0;width:20px;
+}
+.new-dw-cal-day.new-range-left .new-range-bg:before{
+  left:-20px;
+  background:linear-gradient(90deg,rgba(223,234,254,0),var(--band));
+}
+.new-dw-cal-day.new-range-right .new-range-bg:after{
+  right:-20px;
+  background:linear-gradient(270deg,rgba(223,234,254,0),var(--band));
+}
 
-
-
-
-
+/* 오늘 이전(이번 달) 회색 */
+.new-dw-cal-day.new-past .new-dw-cal-day-fg { color:#999; }
 </style>
 </head>
 <body>
 
-<div class="dwwr">
-  <div aria-live="assertive" class="dw-aria dw-hidden">Calendar</div>
-  <!-- <div class="dwv">출발일자</div> -->
+<div class="new-dwwr">
+  <div aria-live="assertive" class="new-dw-aria new-dw-hidden">Calendar</div>
 
-  <div class="dwcc">
-    <div class="mbsc-w-p dwc dwsc dwhl dwc-hh"><!-- wheel 숨김 --></div>
-
-    <div class="dw-cal-pnl" id="sDate_dw_pnl_0">
-      <div class="dw-cal-pnl-i">
-        <div class="mbsc-w-p dw-cal-c">
-          <div class="dw-cal">
-
-            <!-- 상단(현재 표시 기준) -->
-            <!-- <div class="dw-cal-header">
-              <div class="dw-cal-btnc dw-cal-btnc-ym">
-                <span class="dw-cal-year" aria-label="2025">2025년</span>
-                <span class="dw-cal-month" aria-label="11월">11월</span>
-              </div>
-            </div> -->
-
-            <div class="dw-cal-body">
-              <div class="dw-cal-m-c dw-cal-v">
-
-                <div class="dw-cal-anim-c">
-                  <div class="dw-cal-anim">
-
-                    <div class="dw-cal-slide">
-                      <div class="m-title">2025년 11월</div>
-
-                      <div class="dow">
-                        <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
-                      </div>
-
-                      <div class="rows">
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">27</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">28</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">29</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">30</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">31</div></div></div>
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">1</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">2</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun dw-cal-today">
-                            <div class="range-bg"></div><div class="cap"></div>
-                            <div class="dw-i"><div class="dw-cal-day-fg">3</div></div>
-                            <div class="today-tag">오늘</div>
-                          </div>
-                          <div class="dw-cal-day in-range range-left"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">4</div></div></div>
-                          <div class="dw-cal-day in-range"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">5</div></div></div>
-                          <div class="dw-cal-day is-start in-range range-left"><div class="range-bg"></div><div class="cap"></div><div class="dw-i"><div class="dw-cal-day-fg">6</div></div></div>
-                          <div class="dw-cal-day in-range range-left"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">7</div></div></div>
-                          <div class="dw-cal-day in-range"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">8</div></div></div>
-                           <div class="dw-cal-day in-range"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">9</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day in-range sun"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">10</div></div></div>
-                          <div class="dw-cal-day in-range"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">11</div></div></div>
-                          <div class="dw-cal-day in-range"><div class="range-bg"></div><div class="dw-i"><div class="dw-cal-day-fg">12</div></div></div>
-                              <div class="dw-cal-day is-end in-range range-right"><div class="range-bg"></div><div class="cap"></div><div class="dw-i"><div class="dw-cal-day-fg">13</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">14</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">15</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">16</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">17</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">18</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">19</div></div></div>
-                           <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">20</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">21</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">22</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">23</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">24</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">25</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">26</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">27</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">28</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">29</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">30</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">1</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">2</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">3</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">4</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">5</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">6</div></div></div>
-                          <div class="dw-cal-day dw-cal-day-diff"><div class="dw-i"><div class="dw-cal-day-fg">7</div></div></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="dw-cal-slide peek-next" aria-hidden="true">
-                       <div class="m-title">2025년 12월</div>
-
-                      <div class="dow">
-                        <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
-                      </div>
-
-                      <div class="rows">
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">1</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">2</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">3</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">4</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">5</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">6</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">7</div></div></div>
-                        </div>
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">8</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">9</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">10</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">11</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">12</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">13</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">14</div></div></div>
-                        </div>
-
-                        <div class="dw-cal-row">
-                          <div class="dw-cal-day sun"><div class="dw-i"><div class="dw-cal-day-fg">15</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">16</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">17</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">18</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">19</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">20</div></div></div>
-                          <div class="dw-cal-day"><div class="dw-i"><div class="dw-cal-day-fg">21</div></div></div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-
-              </div>
+  <div id="vp">
+    <div class="new-dwcc">
+      <div class="new-mbsc-w-p new-dw-cal-c">
+        <div class="new-dw-cal">
+          <div class="new-dw-cal-body">
+            <div class="new-dw-cal-m-c new-dw-cal-v">
+              <div id="yearContainer"><!-- 올해 1~12월 전부 + 아래로 무한 확장 --></div>
             </div>
-
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- <div class="dwbc">
-    <div class="dwbw dwb-s"><div class="dwb0 dwb-e dwb">선택</div></div>
-    <div class="dwbw dwb-c"><div class="dwb1 dwb-e dwb">취소</div></div>
-  </div> -->
 </div>
+
+<script>
+(() => {
+  const today = new Date();
+  const Y0 = today.getFullYear();
+  const M0 = today.getMonth();
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const todayISO = iso(today);
+  const noonStamp = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12).getTime();
+  const daysIn = (y,m) => new Date(y, m+1, 0).getDate();
+
+  const S = { start:null, end:null, maxYear:null };
+  const vp = document.getElementById('vp');
+  const box = document.getElementById('yearContainer');
+
+  const div = cls => { const x=document.createElement('div'); x.className=cls; return x; };
+  const title = t => { const x=div('new-m-title'); x.textContent=t; return x; };
+  const dow = () => {
+    const x=div('new-dow');
+    x.innerHTML = '<div class="new-sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>';
+    return x;
+  };
+
+  function makeMonth(y,m){
+    const wrap = div('new-dw-cal-slide');
+    wrap.dataset.ym = `${y}-${m+1}`;
+    wrap.appendChild(title(`${y}년 ${m+1}월`));
+    wrap.appendChild(dow());
+
+    const firstDow = new Date(y,m,1).getDay();
+    const lastDay = daysIn(y,m);
+    const isThisMonth = (y === Y0 && m === M0);
+    let day = 1;
+
+    for(let r=0;r<6;r++){
+      const row = div('new-dw-cal-row');
+      for(let c=0;c<7;c++){
+        const idx = r*7+c;
+        const cell = div('new-dw-cal-day');
+        if(r===0 && idx<firstDow){ cell.classList.add('new-empty'); row.appendChild(cell); continue; }
+        if(day>lastDay){ cell.classList.add('new-empty'); row.appendChild(cell); continue; }
+
+        const dObj = new Date(y,m,day);
+        const ds = iso(dObj);
+        if(dObj.getDay()===0) cell.classList.add('new-sun');
+        if(ds===todayISO) cell.classList.add('new-dw-cal-today');
+
+        // 오늘 이전(이번 달) 회색 + 클릭 불가
+        const isPast = isThisMonth && ds < todayISO;
+        if(isPast) cell.classList.add('new-past');
+
+        cell.dataset.date = ds;
+        cell.innerHTML = `
+          <div class="new-range-bg"></div>
+          <div class="new-cap" style="display:none"></div>
+          <div class="new-dw-i"><div class="new-dw-cal-day-fg">${day}</div></div>
+          ${ds===todayISO ? '<div class="new-today-tag">오늘</div>' : ''}
+        `;
+        if(!isPast) cell.addEventListener('click',()=>pick(dObj));
+        row.appendChild(cell);
+        day++;
+      }
+      wrap.appendChild(row);
+      if(day>lastDay) break;
+    }
+    return wrap;
+  }
+
+  function addYearFrom(y, monthStart=0){
+    const frag=document.createDocumentFragment();
+    for(let m=monthStart;m<12;m++) frag.appendChild(makeMonth(y,m));
+    box.appendChild(frag);
+  }
+
+  function pick(d){
+    if(!S.start||S.end){ S.start=d; S.end=null; }
+    else { S.end=(d<S.start)?S.start:d; S.start=(d<S.start)?d:S.start; }
+    paint();
+  }
+
+  function paint(){
+    const cells=box.querySelectorAll('.new-dw-cal-day');
+    cells.forEach(c=>{
+      c.classList.remove('new-in-range','new-is-start','new-is-end','new-range-left','new-range-right');
+      const cap=c.querySelector('.new-cap'); if(cap) cap.style.display='none';
+      const tag=c.querySelector('.new-today-tag'); if(tag) tag.style.display='';
+    });
+    const todayCell=box.querySelector(`.new-dw-cal-day[data-date="${todayISO}"]`);
+    if(todayCell){
+      todayCell.classList.add('new-dw-cal-today');
+      const tag=todayCell.querySelector('.new-today-tag'); if(tag) tag.style.display='';
+    }
+    if(!S.start&&!S.end) return;
+
+    const A=noonStamp(S.start);
+    const B=S.end?noonStamp(S.end):null;
+
+    cells.forEach(c=>{
+      const ds=c.dataset.date;
+      if(!ds||c.classList.contains('new-empty')||c.classList.contains('new-past')) return;
+      const [yy,mm,dd]=ds.split('-').map(Number);
+      const t=noonStamp(new Date(yy,mm-1,dd));
+
+      if(t===A){
+        c.classList.add('new-is-start');
+        c.querySelector('.new-cap').style.display='block';
+      } else if(B!==null&&t===B){
+        c.classList.add('new-is-end');
+        c.querySelector('.new-cap').style.display='block';
+      } else if(B!==null&&t>A&&t<B){
+        c.classList.add('new-in-range');
+      }
+
+      if(c.classList.contains('new-in-range')){
+        const row=c.parentElement;
+        const i=Array.prototype.indexOf.call(row.children,c);
+        const L=row.children[i-1],R=row.children[i+1];
+        if(!(L&&L.classList.contains('new-in-range'))) c.classList.add('new-range-left');
+        if(!(R&&R.classList.contains('new-in-range'))) c.classList.add('new-range-right');
+      }
+    });
+  }
+
+  function init(){
+    addYearFrom(Y0,M0);
+    S.maxYear=Y0;
+    paint();
+    const cur=box.querySelector(`[data-ym="${Y0}-${M0+1}"]`)||box.firstElementChild;
+    if(cur) cur.scrollIntoView({behavior:'instant',block:'start'});
+    appendNextYear();
+  }
+
+  function appendNextYear(){
+    const y=S.maxYear+1;
+    addYearFrom(y,0);
+    S.maxYear=y;
+    paint();
+  }
+
+  const EDGE=40;
+  vp.addEventListener('scroll',()=>{
+    if(vp.scrollTop+vp.clientHeight>=vp.scrollHeight-EDGE){ appendNextYear(); }
+  },{passive:true});
+
+  init();
+})();
+</script>
 
 </body>
 </html>
-
-
-
-
-
-// app/calendar/kbCalendar.directive.js
-
-angular.module('app').directive('kbCalendar', function ($filter) {
-  return {
-    restrict: 'E',
-    scope: {
-      ngModel: '=?',     // 단일 선택 (YYYYMMDD)
-      rangeModel: '=?',  // { start: 'YYYYMMDD', end: 'YYYYMMDD' }
-      minDate: '=?',     // 'YYYYMMDD' 또는 Date
-      maxDate: '=?',     // 'YYYYMMDD' 또는 Date
-      month: '=?',       // 기준 월 (Date)
-      onPick: '&?'       // on-pick="fn(yyyymmdd)"
-    },
-    template: `
-      <div class="dwwr">
-        <div class="dwcc">
-          <div class="dw-cal-pnl">
-            <div class="dw-cal">
-              <div class="dw-cal-body">
-                <div class="dw-cal-m-c dw-cal-v">
-                  <div class="dw-cal-anim-c">
-                    <div class="dw-cal-anim">
-
-                      <!-- 현재 달 -->
-                      <div class="dw-cal-slide">
-                        <div class="m-title">{{curYear}}년 {{curMonth}}월</div>
-                        <div class="dow">
-                          <div class="sun">일</div><div>월</div><div>화</div>
-                          <div>수</div><div>목</div><div>금</div><div>토</div>
-                        </div>
-                        <div class="rows">
-                          <div class="dw-cal-row" ng-repeat="week in weeks">
-                            <div class="dw-cal-day"
-                                 ng-repeat="d in week"
-                                 ng-class="dayClass(d)"
-                                 ng-click="pick(d)">
-                              <div class="range-bg"></div>
-                              <div class="cap"></div>
-                              <div class="dw-i"><div class="dw-cal-day-fg">{{d.date.getDate()}}</div></div>
-                              <div class="today-tag" ng-if="d.isToday">오늘</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 다음 달 2주 프리뷰 -->
-                      <div class="dw-cal-slide peek-next" aria-hidden="true">
-                        <div class="m-title">{{nextYear}}년 {{nextMonth}}월</div>
-                        <div class="dow">
-                          <div class="sun">일</div><div>월</div><div>화</div>
-                          <div>수</div><div>목</div><div>금</div><div>토</div>
-                        </div>
-                        <div class="rows">
-                          <div class="dw-cal-row" ng-repeat="week in nextWeeks | limitTo:2">
-                            <div class="dw-cal-day"
-                                 ng-repeat="d in week"
-                                 ng-class="dayClass(d)"
-                                 ng-click="pick(d)">
-                              <div class="range-bg"></div>
-                              <div class="cap"></div>
-                              <div class="dw-i"><div class="dw-cal-day-fg">{{d.date.getDate()}}</div></div>
-                              <div class="today-tag" ng-if="d.isToday">오늘</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `,
-    link: function (scope) {
-      // ---- helpers ----
-      function fmt(d) {
-        const y = d.getFullYear();
-        const m = ('0' + (d.getMonth() + 1)).slice(-2);
-        const da = ('0' + d.getDate()).slice(-2);
-        return `${y}${m}${da}`;
-      }
-      function toYmd(x) {
-        if (!x) return null;
-        if (angular.isString(x)) return x.replace(/-/g, '');
-        if (angular.isDate(x)) return fmt(x);
-        return null;
-      }
-      function between(ymd, a, b) {
-        return !!(a && b && ymd >= a && ymd <= b);
-      }
-
-      function normalizeMinMax() {
-        scope._min = toYmd(scope.minDate);
-        scope._max = toYmd(scope.maxDate);
-      }
-      function isDisabledYmd(ymd) {
-        if (scope._min && ymd < scope._min) return true;
-        if (scope._max && ymd > scope._max) return true;
-        return false;
-      }
-
-      const today = new Date();
-      scope.month = scope.month || new Date(today.getFullYear(), today.getMonth(), 1);
-
-      function buildMonth(base) {
-        const y = base.getFullYear();
-        const m = base.getMonth();
-        const first = new Date(y, m, 1);
-        const start = new Date(first);
-        start.setDate(first.getDate() - first.getDay());
-
-        const weeks = [];
-        let cursor = new Date(start);
-        for (let w = 0; w < 6; w++) {
-          const row = [];
-          for (let i = 0; i < 7; i++) {
-            const d = new Date(cursor);
-            const ymd = fmt(d);
-            row.push({
-              date: d,
-              ymd: ymd,
-              inMonth: d.getMonth() === m,
-              isToday: fmt(today) === ymd,
-              disabled: isDisabledYmd(ymd)
-            });
-            cursor.setDate(cursor.getDate() + 1);
-          }
-          weeks.push(row);
-        }
-        return weeks;
-      }
-
-      function update() {
-        normalizeMinMax();
-
-        const y = scope.month.getFullYear();
-        const m = scope.month.getMonth();
-
-        scope.curYear = y;
-        scope.curMonth = m + 1;
-        scope.weeks = buildMonth(scope.month);
-
-        const next = new Date(y, m + 1, 1);
-        scope.nextWeeks = buildMonth(next);
-        scope.nextYear = next.getFullYear();
-        scope.nextMonth = next.getMonth() + 1;
-      }
-
-      scope.dayClass = function (d) {
-        const cls = [];
-        if (!d.inMonth) cls.push('dw-cal-day-diff');
-        if (d.isToday) cls.push('dw-cal-today');
-        if (d.disabled) cls.push('is-disabled');
-
-        const hasRange = scope.rangeModel && (scope.rangeModel.start || scope.rangeModel.end);
-        if (hasRange) {
-          const s = scope.rangeModel.start, e = scope.rangeModel.end;
-          if (s && e && between(d.ymd, s, e)) cls.push('in-range');
-          if (s && d.ymd === s) cls.push('is-start', 'in-range', 'range-left');
-          if (e && d.ymd === e) cls.push('is-end', 'in-range', 'range-right');
-        } else if (scope.ngModel && d.ymd === scope.ngModel) {
-          cls.push('is-start', 'is-end', 'in-range');
-        }
-
-        if (d.date.getDay() === 0) cls.push('sun');
-        return cls.join(' ');
-      };
-
-      scope.pick = function (d) {
-        if (d.disabled) return;
-
-        if (scope.rangeModel) {
-          if (!scope.rangeModel.start || (scope.rangeModel.start && scope.rangeModel.end)) {
-            scope.rangeModel.start = d.ymd;
-            scope.rangeModel.end = null;
-          } else {
-            if (d.ymd < scope.rangeModel.start) {
-              scope.rangeModel.end = scope.rangeModel.start;
-              scope.rangeModel.start = d.ymd;
-            } else {
-              scope.rangeModel.end = d.ymd;
-            }
-          }
-        } else {
-          scope.ngModel = d.ymd;
-        }
-
-        if (scope.onPick) {
-          scope.onPick({ yyyymmdd: d.ymd });
-        }
-      };
-
-      scope.$watchGroup(
-        ['month', 'minDate', 'maxDate', 'rangeModel.start', 'rangeModel.end', 'ngModel'],
-        update
-      );
-      update();
-    }
-  };
-});
-
-
-
-
-a.html
-
-<script src="app/calendar/kbCalendar.directive.js"></script>
-
-<button type="button" class="range-date-btn"
-        ng-click="vm.openCalendarKb('sDate')" aria-label="출발일 선택">
-  <span class="range-date">{{ vm.sDate | date:'yyyy.MM.dd(EEE)' }}</span>
-</button>
-
-<span class="range-dash">–</span>
-
-<button type="button" class="range-date-btn"
-        ng-click="vm.openCalendarKb('eDate')" aria-label="도착일 선택">
-  <span class="range-date">{{ vm.eDate | date:'yyyy.MM.dd(EEE)' }}</span>
-</button>
-
-
-
-<div class="kbcal-overlay" ng-if="vm.calendarVisible" ng-click="vm.closeCalendar()"></div>
-<div class="kbcal-sheet" ng-if="vm.calendarVisible" ng-keydown="$event.key==='Escape' && vm.closeCalendar()">
-  <kb-calendar
-    ng-if="vm.calendarVisible"
-    ng-model="vm.activeCal === 'sDate' ? vm.sDate : vm.eDate"
-    range-model="vm.rangeModel"       
-    min-date="vm.activeCal === 'sDate' ? vm.sDateMin : vm.eDateMin"
-    max-date="vm.activeCal === 'sDate' ? vm.sDateMax : vm.eDateMax"
-    month="vm._baseMonth"
-    on-pick="vm.onPickFromKb(yyyymmdd)">
-  </kb-calendar>
-</div>
-
-
-
-a.js
-
-vm.openCalendarKb = function(type){
-  if (!angular.isDefined(type)) return;
-
-  vm.activeCal = type; // 'sDate' | 'eDate'
-
-  // 기준 월 설정(현재 값 기준)
-  var ymd = (type === 'sDate') ? vm.sDate : vm.eDate;
-  if (ymd) {
-    vm._baseMonth = new Date(+ymd.slice(0,4), +ymd.slice(4,6)-1, 1);
-  } else {
-    var t = new Date();
-    vm._baseMonth = new Date(t.getFullYear(), t.getMonth(), 1);
-  }
-
-  vm.calendarVisible = true; // 모달 오픈
-};
-
-// 닫기
-vm.closeCalendar = function(){
-  vm.calendarVisible = false;
-};
-
-vm.onPickFromKb = function(yyyymmdd){
-  if (vm.activeCal === 'sDate') {
-    vm.sDate = yyyymmdd;
-  } else {
-    vm.eDate = yyyymmdd;
-  }
-  // ★ 기존 changeDate(type)로 모든 후속 비즈니스 로직 처리
-  vm.changeDate(vm.activeCal);
-
-  vm.closeCalendar();
-};
