@@ -102,3 +102,30 @@ body{
   pointer-events:auto;
 }
 </style>
+
+
+
+/* placeholder 전용 색상 */
+input::placeholder {
+  color: #B7B7B7;      /* 원하는 색상 */
+  opacity: 1;           /* 일부 브라우저는 투명도가 낮아서 꼭 넣는 게 좋음 */
+}
+
+/* WebKit 기반 (iOS Safari 포함) */
+input::-webkit-input-placeholder {
+  color: #B7B7B7;
+}
+
+/* Firefox */
+input::-moz-placeholder {
+  color: #B7B7B7;
+}
+
+/* IE/Edge (legacy) */
+input:-ms-input-placeholder {
+  color: #B7B7B7;
+}
+input::-ms-input-placeholder {
+  color: #B7B7B7;
+}
+
