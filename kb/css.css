@@ -1,0 +1,104 @@
+<style>
+/* 데모용 기본 리셋 */
+*{box-sizing:border-box;}
+body{
+  margin:40px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:#f5f5f7;
+}
+
+/* 2024.07 고객정보 입력 / 인증 수정 - 이정아 */
+/* ★ 기존 .form-box-rvs 마크업을 카드형으로 보이게 하는 CSS */
+
+.form-box-rvs{
+  display:flex;
+  flex-direction:column-reverse;
+  width:260px;
+  background:#fff;
+  border-radius:16px;
+  border:1px solid #e5e5e5;
+  box-shadow:0 4px 12px rgba(0,0,0,.04);
+  padding:16px 18px;
+}
+
+/* 각 항목 */
+.form-box-rvs .form-item{
+  padding:16px 0;
+  border:0;                 /* 카드 안쪽에선 개별 border 제거 */
+}
+.form-box-rvs .form-item label{
+  display:block;
+  font-size:12px;
+  color:#999;
+  line-height:16px;
+  margin-bottom:4px;
+}
+.form-box-rvs .form-item .input-box-alone{
+  width:100%;
+  padding:0;
+  height:22px;
+  border:0;
+  font-size:14px;
+  line-height:20px;
+  color:#111;
+  outline:none;
+}
+.form-box-rvs .form-item .input-box-alone:focus{
+  border-radius:0;
+  box-shadow:none;
+  transition:none;
+}
+
+/* 주민번호 앞/뒤 input 정렬용 */
+.input-dash-box{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.side-dash{
+  width:10px;
+  height:1px;
+  background:#ddd;
+}
+
+/* 카드 안 구분선 */
+.form-box-rvs .form-item + .form-item{
+  border-top:1px solid #f0f0f0;
+}
+
+/* focus 효과 (실제 프로젝트에 맞게 조정 가능) */
+.form-box-rvs .form-item:focus-within{
+  /* 전체 카드가 아니라 해당 row만 강조하고 싶으면 여기에 border-color 등 적용 */
+}
+
+/* 아래는 기존 애니메이션 규칙 – 데모에서는 on 클래스로 모두 보이게 */
+@keyframes fadein{
+	0%{opacity:0;transform:translate(0, 10%);}
+	100%{opacity:1;transform:translate(0);}
+}
+.form-box-rvs > :not(:first-child){
+	margin:0;
+	padding:0;
+	height:0;
+	opacity:0;
+	pointer-events:none;
+}
+.form-box-rvs .form-item.on{
+	margin:0;
+	padding:16px 0;
+	height:auto;
+	opacity:1;
+	animation:fadein .4s;
+	pointer-events:auto;
+}
+
+/* 데모에서 첫 번째(이름)도 항상 보이게 하기 위해 강제로 on 부여 */
+.form-box-rvs .form-item.first{ 
+  margin:0;
+  padding:16px 0;
+  height:auto;
+  opacity:1;
+  animation:fadein .4s;
+  pointer-events:auto;
+}
+</style>
