@@ -1,526 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title></title>
+<meta charset="UTF-8">
+<title>혜택 카드 스와이프</title>
+
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
+
 <style>
-/* ===== 베이스 / 레이아웃 최소화 ===== */
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-.new-dwwr{max-width:100%;background:#fff;}
+  * {box-sizing:border-box;margin:0;padding:0;}
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",
+      system-ui,sans-serif;
+    background:#f5f5f7;
+    padding:20px;
+  }
 
-/* 스크롤 뷰포트 */
-#vp{
-  height:100dvh; max-height:100dvh;
-  height:100svh; max-height:100svh;
-  overflow-y:auto;
-  overscroll-behavior-y:contain;
-  -webkit-overflow-scrolling:touch;
-  scroll-snap-type:y proximity;
-  scroll-padding-top:env(safe-area-inset-top,0);
-  padding-top:env(safe-area-inset-top,0);
-  padding-bottom:calc(env(safe-area-inset-bottom,0)+8px);
-  touch-action:pan-y;
-}
+  .benefit-card {
+    max-width:360px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:18px;
+    border:1px solid #e3e4ea;
+    padding:20px 18px 16px;
+    position:relative;
+  }
 
-/* ===== 월 블록 ===== */
-.new-dw-cal-slide{
-  background:#fff;
-  padding:16px 14px 14px;
-  position:relative;
-  scroll-margin-top:16px;
-}
-.new-dw-cal-slide{scroll-snap-align:start}
+  /* 안쪽만 슬라이드, 카드 높이는 거의 고정 느낌 */
+  .benefit-card__swiper {
+    min-height:80px;
+  }
 
-/* 월 제목 */
-.new-m-title{
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;margin:6px 0 14px;
-  font-weight:500;font-size:16px;color:#111;
-}
+  .benefit-card__title-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:8px;
+  }
+  .benefit-card__title {
+    font-size:16px;
+    font-weight:600;
+    color:#111;
+    padding-right:8px;
+  }
+  .benefit-card__rate {
+    font-size:18px;
+    font-weight:700;
+    color:#1d3f90;
+    white-space:nowrap;
+  }
 
-/* 요일 */
-.new-dow{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:0 0 8px;
-}
-.new-dow div{text-align:center;font-size:14px;font-weight:500;color:#666;}
-.new-dow div.new-sun{color:#ED3437}
+  .benefit-card__desc {
+    font-size:13px;
+    line-height:1.5;
+    color:#7b7f88;
+  }
 
-/* 날짜 그리드 */
-.new-dw-cal-row{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;
-  margin:18px -4px 0;padding:0 4px;
-}
+  /* 하단 인덱스 + 재생/정지 버튼 */
+  .benefit-card__pager {
+    position:absolute;
+    right:18px;
+    bottom:12px;
+    padding:4px 10px 4px 12px;
+    border-radius:999px;
+    border:none;
+    background:#f4f5f8;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:#555;
+    cursor:pointer;
+  }
+  .benefit-card__pager:active {
+    background:#e0e2e7;
+  }
 
-/* 날짜 셀 */
-.new-dw-cal-day{
-  position:relative;min-height:32px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;user-select:none;
-}
-.new-dw-cal-day.new-empty{opacity:0;pointer-events:none}
-.new-dw-cal-day .new-dw-i{position:relative;z-index:3}
-.new-dw-cal-day .new-dw-cal-day-fg{font-size:15px;font-weight:500;color:#333;position:relative;z-index:4;}
-.new-dw-cal-day.new-sun .new-dw-cal-day-fg{color:#ef4444}
+  .benefit-card__counter {
+    display:inline-block;
+  }
 
-/* 오늘 날짜(동그라미) */
-.new-dw-cal-day.new-dw-cal-today .new-dw-cal-day-fg:before{
-  content:"";position:absolute;left:50%;top:50%;
-  width:34px;height:34px;border-radius:50%;
-  border:1px solid #cfd5db;transform:translate(-50%,-50%);
-  z-index:2;
-}
-.new-dw-cal-day .new-today-tag{
-  position:absolute;left:50%;bottom:-17px;
-  transform:translateX(-50%);
-  font-size:11px;color:#98a1ab;z-index:3;
-}
+  /* 아이콘 버튼 */
+  #benefitToggle {
+    display:inline-block;
+    width:16px;
+    height:16px;
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center;
+    z-index:9999;position: relative;
+  }
 
-/* 범위 띠 & 선택 캡슐 */
-:root{ --band:#dfeafe; --band-ink:#2D4A9B; }
+  #benefitToggle {
+    background-image:url('https://cdn-icons-png.flaticon.com/512/727/727245.png');
+  }
 
-.new-dw-cal-day .new-range-bg{
-  position:absolute;z-index:1;left:0;right:0;top:6px;bottom:6px;
-  background:var(--band);display:none;
-}
-.new-dw-cal-day.new-in-range .new-range-bg{
-  display:block;top:0;bottom:0;left:-6px;right:-6px;
-}
-
-.new-dw-cal-day.new-is-start .new-cap,
-.new-dw-cal-day.new-is-end .new-cap{
-  display:block;position:absolute;z-index:2;top:0;bottom:0;left:0;right:0;
-  border-radius:999px;background:var(--band-ink);
-}
-.new-dw-cal-day.new-is-start .new-dw-cal-day-fg,
-.new-dw-cal-day.new-is-end  .new-dw-cal-day-fg{color:#fff;z-index:3;}
-
-/* 오늘을 선택한 경우 동그라미 숨김(선택 색상이 위에 오도록) */
-.new-dw-cal-day.new-dw-cal-today.new-is-start .new-dw-cal-day-fg:before,
-.new-dw-cal-day.new-dw-cal-today.new-is-end   .new-dw-cal-day-fg:before{display:none}
-
-/* 범위의 양끝 연결감 */
-.new-dw-cal-day.new-range-left .new-range-bg:before,
-.new-dw-cal-day.new-range-right .new-range-bg:after{
-  content:"";position:absolute;top:0;bottom:0;width:20px;
-}
-.new-dw-cal-day.new-range-left .new-range-bg:before{
-  left:-20px;background:linear-gradient(90deg,rgba(223,234,254,0),var(--band));
-}
-.new-dw-cal-day.new-range-right .new-range-bg:after{
-  right:-20px;background:linear-gradient(270deg,rgba(223,234,254,0),var(--band));
-}
-
-/* 이번달의 '오늘 이전' 회색 처리 */
-.new-dw-cal-day.new-past .new-dw-cal-day-fg { color:#999; }
-
-/* 고정 바(예시) */
-.range-card{
-  position: fixed;
-  top: env(safe-area-inset-top, 0);
-  left: 0;
-  right: 0;
-  height: 56px;
-  z-index: 1000;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
-}
-
-/* 고정 바만큼 캘린더 영역 밀기 */
-#vp{
-  padding-top: calc(env(safe-area-inset-top, 0) + 56px);
-}
+  #benefitToggle.active {
+    background-image:url('https://cdn-icons-png.flaticon.com/512/727/727240.png');
+  }
 </style>
 </head>
 <body>
 
-<div class="range-card">
-  range-card
-</div>
+<div class="benefit-card">
+  <!-- 안쪽만 스와이프되는 영역 -->
+  <div class="benefit-card__swiper swiper">
+    <div class="swiper-wrapper">
+      <!-- slide 1 -->
+      <div class="swiper-slide">
+        <div class="benefit-card__title-row">
+          <p class="benefit-card__title">
+            스마트크루즈컨트롤 장치 장착 특약
+          </p>
+          <p class="benefit-card__rate">42.1%</p>
+        </div>
+        <p class="benefit-card__desc">
+          출고시 스마트크루즈컨트롤장치 장착시 만30세 미만
+        </p>
+      </div>
 
-<div class="new-dwwr">
-  <!-- 스크롤 뷰포트 -->
-  <div id="vp">
-    <!-- 월들이 쌓이는 곳 -->
-    <div id="yearContainer"></div>
+      <!-- slide 2 -->
+      <div class="swiper-slide">
+        <div class="benefit-card__title-row">
+          <p class="benefit-card__title">
+            블랙박스 장착 특약
+          </p>
+          <p class="benefit-card__rate">7.0%</p>
+        </div>
+        <p class="benefit-card__desc">
+          내장형 블랙박스, 차량등록 22년 이후
+        </p>
+      </div>
+
+      <!-- slide 3 -->
+      <div class="swiper-slide">
+        <div class="benefit-card__title-row">
+          <p class="benefit-card__title">
+            마일리지 할인 특약
+          </p>
+          <p class="benefit-card__rate">37.7%</p>
+        </div>
+        <p class="benefit-card__desc">
+          연간 2천km 이하 주행, 65세 미만, 커넥티드 기능 가입
+        </p>
+      </div>
+    </div>
   </div>
+
+  <!-- 하단 고정 인덱스/버튼 -->
+  <button type="button" class="benefit-card__pager" id="benefitPager">
+    <span class="benefit-card__counter">
+      <span id="benefitCurrent">1</span> / <span id="benefitTotal">3</span>
+    </span>
+    <span class="benefit-card__arrow" id="benefitToggle"></span>
+  </button>
 </div>
 
+<!-- Swiper JS -->
+<script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
 <script>
-(function () {
-  // 전역에서 호출할 진입 함수
-  window.initNewCalendar = function initNewCalendar(options) {
-    options = options || {};
+  document.addEventListener('DOMContentLoaded', function () {
+    var slides = document.querySelectorAll('.benefit-card__swiper .swiper-slide');
+    var total = slides.length;
 
-    // ======================
-    //   유틸 함수들
-    // ======================
-    function toISO(d) {
-      return (
-        d.getFullYear() +
-        '-' +
-        String(d.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(d.getDate()).padStart(2, '0')
-      );
-    }
+    var currentEl = document.getElementById('benefitCurrent');
+    var totalEl   = document.getElementById('benefitTotal');
+    var pagerBtn  = document.getElementById('benefitPager');
+    var toggleEl  = document.getElementById('benefitToggle');
 
-    function fromISO(s) {
-      const parts = s.split('-').map(Number);
-      return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
+    totalEl.textContent = total;
 
-    function toYMD(d) {
-      return (
-        d.getFullYear() +
-        String(d.getMonth() + 1).padStart(2, '0') +
-        String(d.getDate()).padStart(2, '0')
-      );
-    }
-
-    function fromYMD(s) {
-      return new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8));
-    }
-
-    function normalizeDate(x) {
-      if (!x) return null;
-      if (x instanceof Date) return x;
-      if (typeof x === 'string') {
-        if (x.indexOf('-') >= 0) return fromISO(x); // 'YYYY-MM-DD'
-        if (x.length === 8) return fromYMD(x);       // 'YYYYMMDD'
-      }
-      return null;
-    }
-
-    function noonStamp(d) {
-      return new Date(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate(),
-        12, 0, 0, 0
-      ).getTime();
-    }
-
-    function daysIn(y, m) {
-      return new Date(y, m + 1, 0).getDate();
-    }
-
-    // 오늘 기준
-    const today = new Date();
-    const Y0 = today.getFullYear();
-    const M0 = today.getMonth();
-    const todayISO = toISO(today);
-
-    // ======================
-    //   상태 / 설정
-    // ======================
-    const S = {
-      start: null,   // Date
-      end: null,     // Date
-      maxYear: null  // 숫자 (마지막으로 렌더한 연도)
-    };
-
-    const cfg = {
-      min: normalizeDate(options.minDate),   // Date | null
-      max: normalizeDate(options.maxDate),   // Date | null
-      onPick: typeof options.onPick === 'function' ? options.onPick : null
-    };
-
-    // 초기 선택값 있으면 세팅
-    if (options.startDate) {
-      S.start = normalizeDate(options.startDate);
-    }
-    if (options.endDate) {
-      S.end = normalizeDate(options.endDate);
-    }
-
-    let vp, box;
-    let _bound = false;
-
-    // DOM 헬퍼
-    function div(cls) {
-      const x = document.createElement('div');
-      if (cls) x.className = cls;
-      return x;
-    }
-
-    function title(t) {
-      const x = div('new-m-title');
-      x.textContent = t;
-      return x;
-    }
-
-    function dow() {
-      const x = div('new-dow');
-      x.innerHTML =
-        '<div class="new-sun">일</div><div>월</div><div>화</div>' +
-        '<div>수</div><div>목</div><div>금</div><div>토</div>';
-      return x;
-    }
-
-    // 한 달짜리 블록 생성
-    function makeMonth(y, m) {
-      const wrap = div('new-dw-cal-slide');
-      wrap.dataset.ym = y + '-' + (m + 1);
-      wrap.appendChild(title(y + '년 ' + (m + 1) + '월'));
-      wrap.appendChild(dow());
-
-      const firstDow = new Date(y, m, 1).getDay();
-      const lastDay = daysIn(y, m);
-      const isThisMonth = (y === Y0 && m === M0);
-
-      let day = 1;
-      for (let r = 0; r < 6; r++) {
-        const row = div('new-dw-cal-row');
-
-        for (let c = 0; c < 7; c++) {
-          const idx = r * 7 + c;
-          const cell = div('new-dw-cal-day');
-
-          // 앞쪽 빈칸
-          if (r === 0 && idx < firstDow) {
-            cell.classList.add('new-empty');
-            row.appendChild(cell);
-            continue;
-          }
-          // 뒤쪽 빈칸
-          if (day > lastDay) {
-            cell.classList.add('new-empty');
-            row.appendChild(cell);
-            continue;
-          }
-
-          const dObj = new Date(y, m, day);
-          const ds = toISO(dObj);
-
-          if (dObj.getDay() === 0) cell.classList.add('new-sun');
-          if (ds === todayISO) cell.classList.add('new-dw-cal-today');
-
-          const isPast = isThisMonth && (ds < todayISO);
-          if (isPast) cell.classList.add('new-past');
-
-          // min/max 범위 밖이면 선택 막고 스타일 줄 수도 있음 (원하면 클래스 추가)
-          if (cfg.min && dObj < cfg.min) cell.classList.add('new-disabled');
-          if (cfg.max && dObj > cfg.max) cell.classList.add('new-disabled');
-
-          cell.dataset.date = ds;
-          cell.innerHTML =
-            '<div class="new-range-bg"></div>' +
-            '<div class="new-cap" style="display:none"></div>' +
-            '<div class="new-dw-i"><div class="new-dw-cal-day-fg">' + day + '</div></div>' +
-            (ds === todayISO ? '<div class="new-today-tag">오늘</div>' : '');
-
-          row.appendChild(cell);
-          day++;
-        }
-
-        wrap.appendChild(row);
-        if (day > lastDay) break;
-      }
-
-      return wrap;
-    }
-
-    // 특정 연도의 monthStart월부터 12월까지 쌓기
-    function addYearFrom(y, monthStart) {
-      const frag = document.createDocumentFragment();
-      for (let m = (monthStart || 0); m < 12; m++) {
-        frag.appendChild(makeMonth(y, m));
-      }
-      box.appendChild(frag);
-    }
-
-    // 날짜 클릭 처리
-    function pick(d) {
-      // min/max 체크
-      if (cfg.min && d < cfg.min) return;
-      if (cfg.max && d > cfg.max) return;
-
-      if (!S.start || S.end) {
-        S.start = d;
-        S.end = null;
-      } else {
-        if (d < S.start) {
-          S.end = S.start;
-          S.start = d;
-        } else {
-          S.end = d;
-        }
-      }
-
-      paint();
-
-      // 콜백 존재 시 전달
-      if (cfg.onPick) {
-        cfg.onPick({
-          startDate: S.start ? toYMD(S.start) : null,
-          endDate: S.end ? toYMD(S.end) : null
-        });
-      }
-    }
-
-    // 화면에 선택 상태 다시 칠하기
-    function paint() {
-      const cells = box.querySelectorAll('.new-dw-cal-day');
-      cells.forEach(function (c) {
-        c.classList.remove(
-          'new-in-range',
-          'new-is-start',
-          'new-is-end',
-          'new-range-left',
-          'new-range-right'
-        );
-        const cap = c.querySelector('.new-cap');
-        if (cap) cap.style.display = 'none';
-        const tag = c.querySelector('.new-today-tag');
-        if (tag) tag.style.display = '';
-      });
-
-      const todayCell = box.querySelector('.new-dw-cal-day[data-date="' + todayISO + '"]');
-      if (todayCell) {
-        todayCell.classList.add('new-dw-cal-today');
-        const tag = todayCell.querySelector('.new-today-tag');
-        if (tag) tag.style.display = '';
-      }
-
-      if (!S.start && !S.end) return;
-
-      const A = noonStamp(S.start);
-      const B = S.end ? noonStamp(S.end) : null;
-
-      cells.forEach(function (c) {
-        const ds = c.dataset.date;
-        if (!ds ||
-            c.classList.contains('new-empty') ||
-            c.classList.contains('new-past') ||
-            c.classList.contains('new-disabled')) return;
-
-        const parts = ds.split('-').map(Number);
-        const t = noonStamp(new Date(parts[0], parts[1] - 1, parts[2]));
-
-        if (t === A) {
-          c.classList.add('new-is-start');
-          c.querySelector('.new-cap').style.display = 'block';
-        } else if (B !== null && t === B) {
-          c.classList.add('new-is-end');
-          c.querySelector('.new-cap').style.display = 'block';
-        } else if (B !== null && t > A && t < B) {
-          c.classList.add('new-in-range');
-        }
-
-        if (c.classList.contains('new-in-range')) {
-          const row = c.parentElement;
-          const i = Array.prototype.indexOf.call(row.children, c);
-          const L = row.children[i - 1];
-          const R = row.children[i + 1];
-          if (!(L && L.classList.contains('new-in-range'))) c.classList.add('new-range-left');
-          if (!(R && R.classList.contains('new-in-range'))) c.classList.add('new-range-right');
-        }
-      });
-    }
-
-    function appendNextYear() {
-      const y = S.maxYear + 1;
-      addYearFrom(y, 0);
-      S.maxYear = y;
-      paint();
-    }
-
-    // 실제 초기화
-    function initCore() {
-      vp = document.getElementById('vp');
-      box = document.getElementById('yearContainer');
-
-      if (!vp || !box) {
-        console.warn('[calendar] vp/yearContainer를 찾지 못했습니다.');
-        return;
-      }
-
-      // 초기화
-      box.innerHTML = '';
-      S.start = S.start || null;
-      S.end = S.end || null;
-      S.maxYear = null;
-
-      // 이벤트는 한 번만 바인딩
-      if (!_bound) {
-        box.addEventListener('click', function (e) {
-          const cell = e.target.closest('.new-dw-cal-day');
-          if (!cell ||
-              cell.classList.contains('new-empty') ||
-              cell.classList.contains('new-past') ||
-              cell.classList.contains('new-disabled')) return;
-
-          const ds = cell.dataset.date;
-          if (!ds) return;
-          const parts = ds.split('-').map(Number);
-          pick(new Date(parts[0], parts[1] - 1, parts[2]));
-        });
-
-        const EDGE = 40;
-        vp.addEventListener('scroll', function () {
-          if (vp.scrollTop + vp.clientHeight >= vp.scrollHeight - EDGE) {
-            appendNextYear();
-          }
-        }, { passive: true });
-
-        _bound = true;
-      }
-
-      // 첫 렌더
-      addYearFrom(Y0, M0);
-      S.maxYear = Y0;
-      paint();
-
-      const cur =
-        box.querySelector('[data-ym="' + Y0 + '-' + (M0 + 1) + '"]') ||
-        box.firstElementChild;
-      if (cur) {
-        cur.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-
-      // 아래로 1년 미리
-      appendNextYear();
-    }
-
-    // 바로 실행
-    initCore();
-  };
-
-  // 페이지 로드 후 자동 초기화하고 싶으면 여기서 호출
-  // window.initNewCalendar();
-})();
-</script>
-
-vm.openOvrseaCalendar = function () {
-  $timeout(function () {
-    window.initNewCalendar({
-      startDate: vm.sDate,
-      endDate: vm.eDate,
-      minDate: vm.sDateMin,
-      maxDate: vm.sDateMax,
-      onPick: function (range) {
-
-        $scope.$apply(function () {
-          // 날짜 값 업데이트
-          if (range.startDate) {
-            vm.sDate = range.startDate;
-            vm.changeDate('sDate');
-          }
-          if (range.endDate) {
-            vm.eDate = range.endDate;
-            vm.changeDate('eDate');
-          }
-
-          // 시간은 기존 값 그대로 둠
-          // 필요 시 자동 조정 가능 (예: 출발일=도착일이면 출발시간보다 늦게 제한)
-        });
-
+    // Swiper 초기화 (처음에는 자동 롤링 ON)
+    var swiper = new Swiper('.benefit-card__swiper', {
+      loop: true,
+      autoHeight: false,
+      allowTouchMove: true, // 모바일 스와이프
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false
       }
     });
-  }, 0);
-};
 
+    function updateIndex() {
+      currentEl.textContent = swiper.realIndex + 1;
+    }
+
+    swiper.on('slideChange', updateIndex);
+    updateIndex();
+
+    // 초기 상태: 자동 롤링 중 → active = 재생 아이콘
+    // (원하는 반대로 쓰고 싶으면 여기 반대로 세팅하면 됨)
+    toggleEl.classList.add('active'); // ▶ 아이콘
+
+    // 버튼 클릭 시
+    pagerBtn.addEventListener('click', function (e) {
+      // 아이콘 부분 클릭인지, 카운터 쪽 클릭인지 상관없이
+      // 일단 "재생/정지 토글"만 수행하게 할 수도 있고,
+      // 필요하면 영역별로 나눠도 됨
+
+      // 재생 중이면 -> 정지
+      if (toggleEl.classList.contains('active')) {
+        swiper.autoplay.stop();
+        toggleEl.classList.remove('active'); // ⬛ 아이콘(정지)
+      } else {
+        // 정지 상태면 -> 재생
+        swiper.autoplay.start();
+        toggleEl.classList.add('active'); // ▶ 아이콘(재생)
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
