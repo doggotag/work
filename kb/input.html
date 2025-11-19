@@ -1,215 +1,358 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>혜택 카드 스와이프</title>
-
-<!-- Swiper CSS -->
-<link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
-
+<meta charset="UTF-8" />
+<title>혜택 카드 샘플</title>
 <style>
-  * {box-sizing:border-box;margin:0;padding:0;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",
-      system-ui,sans-serif;
-    background:#f5f5f7;
-    padding:20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      system-ui, sans-serif;
+    background: #444;          /* 바깥 어두운 영역 */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .benefit-card {
-    max-width:360px;
-    margin:0 auto;
-    background:#fff;
-    border-radius:18px;
-    border:1px solid #e3e4ea;
-    padding:20px 18px 16px;
-    position:relative;
+  /* 전체 카드 */
+  .card {
+    width: 320px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,.15);
   }
 
-  /* 안쪽만 슬라이드, 카드 높이는 거의 고정 느낌 */
-  .benefit-card__swiper {
-    min-height:80px;
+  /* 타이틀 영역 */
+  .card-title-wrap {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #222;
+    margin-bottom: 16px;
   }
 
-  .benefit-card__title-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    margin-bottom:8px;
-  }
-  .benefit-card__title {
-    font-size:16px;
-    font-weight:600;
-    color:#111;
-    padding-right:8px;
-  }
-  .benefit-card__rate {
-    font-size:18px;
-    font-weight:700;
-    color:#1d3f90;
-    white-space:nowrap;
+  /* 리스트 + 이미지 영역 (여기서 정렬) */
+  .card-body-line {
+    display: flex;
+    align-items: flex-start; /* 리스트 첫 줄 기준으로 이미지 정렬 */
+    margin-bottom: 10px;
   }
 
-  .benefit-card__desc {
-    font-size:13px;
-    line-height:1.5;
-    color:#7b7f88;
+  .card-list {
+    flex: 1;
+    list-style: disc;
+    margin-left: 18px; /* bullet 들여쓰기 */
+    font-size: 13px;
+    color: #555;
+    line-height: 1.7;
   }
 
-  /* 하단 인덱스 + 재생/정지 버튼 */
-  .benefit-card__pager {
-    position:absolute;
-    right:18px;
-    bottom:12px;
-    padding:4px 10px 4px 12px;
-    border-radius:999px;
-    border:none;
-    background:#f4f5f8;
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size:12px;
-    color:#555;
-    cursor:pointer;
-  }
-  .benefit-card__pager:active {
-    background:#e0e2e7;
+  .card-list li + li {
+    margin-top: 4px;
   }
 
-  .benefit-card__counter {
-    display:inline-block;
+  /* 리스트 오른쪽 이미지 */
+  .card-image {
+    width: 82px;
+    margin-left: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 리스트 첫 줄과 Y축 맞추기 */
   }
 
-  /* 아이콘 버튼 */
-  #benefitToggle {
-    display:inline-block;
-    width:16px;
-    height:16px;
-    background-size:contain;
-    background-repeat:no-repeat;
-    background-position:center;
-    z-index:9999;position: relative;
+  .percent-badge {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #2d7aff;
+    position: relative;
+    box-shadow: 0 6px 10px rgba(0,0,0,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
   }
 
-  #benefitToggle {
-    background-image:url('https://cdn-icons-png.flaticon.com/512/727/727245.png');
+  .percent-badge::before,
+  .percent-badge::after {
+    content: "";
+    position: absolute;
+    background: rgba(45,122,255,.2);
+    border-radius: 50%;
+  }
+  .percent-badge::before {
+    width: 10px;
+    height: 10px;
+    top: -8px;
+    left: 6px;
+  }
+  .percent-badge::after {
+    width: 7px;
+    height: 7px;
+    right: -2px;
+    bottom: 10px;
   }
 
-  #benefitToggle.active {
-    background-image:url('https://cdn-icons-png.flaticon.com/512/727/727240.png');
+  .percent-badge span {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 하단 문구 */
+  .card-legal {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 16px;
+  }
+
+  /* 버튼 영역 */
+  .card-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .card-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 999px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .card-btn--outline {
+    background: #f6f6f8;
+    color: #333;
+  }
+
+  .card-btn--primary {
+    background: #ffc700;
+    color: #222;
   }
 </style>
 </head>
 <body>
 
-<div class="benefit-card">
-  <!-- 안쪽만 스와이프되는 영역 -->
-  <div class="benefit-card__swiper swiper">
-    <div class="swiper-wrapper">
-      <!-- slide 1 -->
-      <div class="swiper-slide">
-        <div class="benefit-card__title-row">
-          <p class="benefit-card__title">
-            스마트크루즈컨트롤 장치 장착 특약
-          </p>
-          <p class="benefit-card__rate">42.1%</p>
-        </div>
-        <p class="benefit-card__desc">
-          출고시 스마트크루즈컨트롤장치 장착시 만30세 미만
-        </p>
-      </div>
+<div class="card">
+  <!-- 타이틀 -->
+  <div class="card-title-wrap">
+    첫 줄 타이틀을 최대 15자<br>
+    두번째 줄 타이틀을 최대 20자 권장합니다
+  </div>
 
-      <!-- slide 2 -->
-      <div class="swiper-slide">
-        <div class="benefit-card__title-row">
-          <p class="benefit-card__title">
-            블랙박스 장착 특약
-          </p>
-          <p class="benefit-card__rate">7.0%</p>
-        </div>
-        <p class="benefit-card__desc">
-          내장형 블랙박스, 차량등록 22년 이후
-        </p>
-      </div>
+  <!-- 리스트 + 이미지 한 줄 -->
+  <div class="card-body-line">
+    <ul class="card-list">
+      <li>조건1 10~15자 권장합니다</li>
+      <li>조건2 10~15자 권장합니다</li>
+      <li>조건3 10~15자 권장합니다</li>
+    </ul>
 
-      <!-- slide 3 -->
-      <div class="swiper-slide">
-        <div class="benefit-card__title-row">
-          <p class="benefit-card__title">
-            마일리지 할인 특약
-          </p>
-          <p class="benefit-card__rate">37.7%</p>
-        </div>
-        <p class="benefit-card__desc">
-          연간 2천km 이하 주행, 65세 미만, 커넥티드 기능 가입
-        </p>
+    <div class="card-image">
+      <div class="percent-badge">
+        <span>5%</span>
       </div>
     </div>
   </div>
 
-  <!-- 하단 고정 인덱스/버튼 -->
-  <button type="button" class="benefit-card__pager" id="benefitPager">
-    <span class="benefit-card__counter">
-      <span id="benefitCurrent">1</span> / <span id="benefitTotal">3</span>
-    </span>
-    <span class="benefit-card__arrow" id="benefitToggle"></span>
-  </button>
+  <!-- 하단 법적 문구 -->
+  <p class="card-legal">
+    준법감시인 심의필 제2024-999호(2024.06.27 ~ 2025.06.26)
+  </p>
+
+  <!-- 버튼 두 개 -->
+  <div class="card-buttons">
+    <button type="button" class="card-btn card-btn--outline">
+      혜택 자세히보기
+    </button>
+    <button type="button" class="card-btn card-btn--primary">
+      보험료 계산하기
+    </button>
+  </div>
 </div>
 
-<!-- Swiper JS -->
-<script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var slides = document.querySelectorAll('.benefit-card__swiper .swiper-slide');
-    var total = slides.length;
+</body>
+</html>
 
-    var currentEl = document.getElementById('benefitCurrent');
-    var totalEl   = document.getElementById('benefitTotal');
-    var pagerBtn  = document.getElementById('benefitPager');
-    var toggleEl  = document.getElementById('benefitToggle');
 
-    totalEl.textContent = total;
 
-    // Swiper 초기화 (처음에는 자동 롤링 ON)
-    var swiper = new Swiper('.benefit-card__swiper', {
-      loop: true,
-      autoHeight: false,
-      allowTouchMove: true, // 모바일 스와이프
-      autoplay: {
-        delay: 3000,
-        disableOnInteraction: false
-      }
-    });
 
-    function updateIndex() {
-      currentEl.textContent = swiper.realIndex + 1;
-    }
 
-    swiper.on('slideChange', updateIndex);
-    updateIndex();
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>혜택 카드 케이스 2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    // 초기 상태: 자동 롤링 중 → active = 재생 아이콘
-    // (원하는 반대로 쓰고 싶으면 여기 반대로 세팅하면 됨)
-    toggleEl.classList.add('active'); // ▶ 아이콘
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      system-ui, sans-serif;
+    background: #444;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    // 버튼 클릭 시
-    pagerBtn.addEventListener('click', function (e) {
-      // 아이콘 부분 클릭인지, 카운터 쪽 클릭인지 상관없이
-      // 일단 "재생/정지 토글"만 수행하게 할 수도 있고,
-      // 필요하면 영역별로 나눠도 됨
+  .wrap {
+    width: 320px;
+  }
 
-      // 재생 중이면 -> 정지
-      if (toggleEl.classList.contains('active')) {
-        swiper.autoplay.stop();
-        toggleEl.classList.remove('active'); // ⬛ 아이콘(정지)
-      } else {
-        // 정지 상태면 -> 재생
-        swiper.autoplay.start();
-        toggleEl.classList.add('active'); // ▶ 아이콘(재생)
-      }
-    });
-  });
-</script>
+  /* 상단 카드 */
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,.15);
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #222;
+    margin-bottom: 16px;
+  }
+
+  /* 5% 아이콘 (가운데) */
+  .card-icon-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .percent-badge {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: #2d7aff;
+    position: relative;
+    box-shadow: 0 6px 10px rgba(0,0,0,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .percent-badge::before,
+  .percent-badge::after {
+    content: "";
+    position: absolute;
+    background: rgba(45,122,255,.2);
+    border-radius: 50%;
+  }
+  .percent-badge::before {
+    width: 11px;
+    height: 11px;
+    top: -8px;
+    left: 6px;
+  }
+  .percent-badge::after {
+    width: 8px;
+    height: 8px;
+    right: -2px;
+    bottom: 10px;
+  }
+  .percent-badge span {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 조건 리스트 */
+  .card-list {
+    list-style: disc;
+    margin-left: 18px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .card-list li + li {
+    margin-top: 4px;
+  }
+
+  .card-legal {
+    font-size: 11px;
+    color: #999;
+  }
+
+  /* 버튼 박스 (아래 따로) */
+  .card-buttons-box {
+    margin-top: 14px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .card-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 999px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .card-btn--outline {
+    background: #f6f6f8;
+    color: #333;
+  }
+
+  .card-btn--primary {
+    background: #ffc700;
+    color: #222;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- 상단 카드 -->
+  <div class="card">
+    <div class="card-title">
+      첫 줄 타이틀 최대 15자<br>
+      두번째 줄 타이틀 최대 20자 권장합니다
+    </div>
+
+    <div class="card-icon-wrap">
+      <div class="percent-badge">
+        <span>5%</span>
+      </div>
+    </div>
+
+    <ul class="card-list">
+      <li>조건1은 15자~20자까지 권장합니다</li>
+      <li>조건2는 장문이 필요한 경우 입니다 단, 장문의 경우
+          가독성이 낮으면 한 행당 30자까지만 권장합니다</li>
+    </ul>
+
+    <p class="card-legal">
+      준법감시인 심의필 제2024-999호(2024.06.27 ~ 2025.06.26)
+    </p>
+  </div>
+
+  <!-- 아래 버튼 박스 -->
+  <div class="card-buttons-box">
+    <button type="button" class="card-btn card-btn--outline">
+      혜택 자세히보기
+    </button>
+    <button type="button" class="card-btn card-btn--primary">
+      보험료 계산하기
+    </button>
+  </div>
+</div>
 
 </body>
 </html>
