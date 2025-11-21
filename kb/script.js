@@ -1,74 +1,148 @@
+window.initBenefitCard = function () {
+  const swiper = document.getElementById("benefitSwiper");
+  const wrapper = swiper.querySelector(".swiper-wrapper");
+  const slides = wrapper.querySelectorAll(".swiper-slide");
 
-  window.initBenefitCard = function () {
-    var slides = document.querySelectorAll('.benefit-card__swiper .swiper-slide');
-    if (!slides.length) return; // DOM 아직 없으면 종료
+  const currentEl = document.getElementById("benefitCurrent");
+  const totalEl = document.getElementById("benefitTotal");
+  const toggleEl = document.getElementById("benefitToggle");
+  const pagerBtn = document.getElementById("benefitPager");
 
-    var total     = slides.length;
-    var currentEl = document.getElementById('benefitCurrent');
-    var totalEl   = document.getElementById('benefitTotal');
-    var pagerBtn  = document.getElementById('benefitPager');
-    var toggleEl  = document.getElementById('benefitToggle');
+  if (!slides.length) return;
 
-    if (!currentEl || !totalEl || !pagerBtn || !toggleEl) return;
+  let total = slides.length;
+  let currentIndex = 0;
+  let autoPlay = true;
+  let autoTimer;
 
-    // 중복 초기화 방지
-    if (pagerBtn.dataset.inited === '1') return;
-    pagerBtn.dataset.inited = '1';
+  totalEl.textContent = total;
 
-    totalEl.textContent = total;
+  // --- 슬라이드 이동 함수 ---
+  function goToSlide(index, animate = true) {
+    if (!animate) wrapper.style.transition = "none";
+    else wrapper.style.transition = "transform 0.35s ease";
 
-    // ✅ Swiper 3.3.1 스타일 옵션
-    var swiper = new Swiper('.benefit-card__swiper', {
-      loop: true,
-      autoHeight: false,
+    wrapper.style.transform = `translateX(${-index * 100}%)`;
+    currentEl.textContent = index + 1;
+  }
 
-      // 3.x 에서는 숫자
-      autoplay: 3000,
-      autoplayDisableOnInteraction: false,
+  // --- 자동롤링 ---
+  function startAutoPlay() {
+    autoTimer = setInterval(() => {
+      currentIndex = (currentIndex + 1) % total;
+      goToSlide(currentIndex);
+    }, 3000);
+  }
 
-      // 터치 관련 옵션들
-      touchRatio: 1,          // 0이면 드래그 안 됨
-      simulateTouch: true,    // PC에서도 마우스로 드래그 가능
-      noSwiping: false,       // 슬라이드에 swiper-no-swiping 있으면 막힘
-      preventClicks: false,
-      preventClicksPropagation: false,
+  function stopAutoPlay() {
+    clearInterval(autoTimer);
+  }
 
-      // 이벤트 콜백 (3.x 스타일)
-      onInit: function (sw) {
-        updateIndex(sw);
-      },
-      onSlideChangeStart: function (sw) {
-        updateIndex(sw);
-      },
-      onTouchStart: function (sw, e) {
-        console.log('[benefit swiper] touchstart', e && e.type);
-      }
-    });
+  startAutoPlay();
+  toggleEl.classList.add("active"); // 처음엔 재생 아이콘
 
-    function updateIndex(sw) {
-      var idx;
-      if (typeof sw.realIndex === 'number') {
-        idx = sw.realIndex;
-      } else {
-        idx = sw.activeIndex % total;
-        if (idx < 0) idx += total;
-      }
-      currentEl.textContent = (idx % total) + 1;
+  // --- 재생/정지 버튼 ---
+  pagerBtn.addEventListener("click", () => {
+    autoPlay = !autoPlay;
+
+    if (autoPlay) {
+      startAutoPlay();
+      toggleEl.classList.add("active");
+    } else {
+      stopAutoPlay();
+      toggleEl.classList.remove("active");
+    }
+  });
+
+  // --- 터치/스와이프 구현 ---
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+
+  swiper.addEventListener("touchstart", startDrag, { passive: true });
+  swiper.addEventListener("mousedown", startDrag);
+
+  function startDrag(e) {
+    isDragging = true;
+    wrapper.style.transition = "none";
+    startX = e.touches ? e.touches[0].clientX : e.clientX;
+  }
+
+  window.addEventListener("touchmove", dragMove, { passive: false });
+  window.addEventListener("mousemove", dragMove);
+
+  function dragMove(e) {
+    if (!isDragging) return;
+
+    currentX = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
+    wrapper.style.transform =
+      `translateX(${currentX - currentIndex * swiper.offsetWidth}px)`;
+    e.preventDefault();
+  }
+
+  window.addEventListener("touchend", endDrag);
+  window.addEventListener("mouseup", endDrag);
+
+  function endDrag() {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const threshold = swiper.offsetWidth * 0.25;
+
+    if (currentX > threshold) {
+      // → 오른쪽 스와이프 (이전)
+      currentIndex = (currentIndex - 1 + total) % total;
+    } else if (currentX < -threshold) {
+      // ← 왼쪽 스와이프 (다음)
+      currentIndex = (currentIndex + 1) % total;
     }
 
-    // 초기 상태: 자동 재생 중 → active(▶)
-    toggleEl.classList.add('active');
-    var isPlaying = true;
+    currentX = 0;
 
-    pagerBtn.addEventListener('click', function () {
-      if (isPlaying) {
-        swiper.stopAutoplay();         // ✅ 3.x 방식
-        toggleEl.classList.remove('active'); // 정지 아이콘
-      } else {
-        swiper.startAutoplay();        // ✅ 3.x 방식
-        toggleEl.classList.add('active');    // 재생 아이콘
-      }
-      isPlaying = !isPlaying;
-    });
-  };
+    goToSlide(currentIndex);
 
+    if (autoPlay) {
+      stopAutoPlay();
+      startAutoPlay();
+    }
+  }
+
+  // 초기 화면 출력
+  goToSlide(0);
+};
+
+document.addEventListener("DOMContentLoaded", initBenefitCard);
+
+
+.benefit-card__swiper {
+  overflow: hidden;
+  position: relative;
+}
+
+.benefit-card__swiper .swiper-wrapper {
+  display: flex;
+  transition: transform 0.35s ease;
+}
+
+.benefit-card__swiper .swiper-slide {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+
+<div class="benefit-card">
+  <div class="benefit-card__swiper" id="benefitSwiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"> ... slide 1 ... </div>
+      <div class="swiper-slide"> ... slide 2 ... </div>
+      <div class="swiper-slide"> ... slide 3 ... </div>
+    </div>
+  </div>
+
+  <button type="button" class="benefit-card__pager" id="benefitPager">
+    <span class="benefit-card__counter">
+      <span id="benefitCurrent">1</span> / <span id="benefitTotal">3</span>
+    </span>
+    <span id="benefitToggle"></span>
+  </button>
+</div>
