@@ -1,1 +1,0 @@
-https://www.figma.com/design/gmD50jLeAzABRDo2ezw9Sn/KB%EC%86%90%ED%95%B4%EB%B3%B4%ED%97%98_%EA%B0%9C%EC%84%A0-%ED%99%94%EB%A9%B4-%EB%94%94%EC%9E%90%EC%9D%B8-%EB%8C%80%ED%91%9C-?node-id=636-2156&m=dev
